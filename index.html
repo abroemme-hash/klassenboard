@@ -1,1507 +1,479 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-
-<title>Klassen-Tagesboard</title>
+<title>Klassenboard U-Bahn</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Caveat:wght@500;600;700&family=Kaushan+Script&display=swap');
+/* Idee: Der Tag ist eine U-Bahn-Linie. Jede Stunde ist eine Haltestelle, "Du bist hier" zeigt die aktuelle.
+   Für die letzte Reihe: wenige Felder, sehr große Schrift, feste Fachfarben, starker Kontrast.
+   Layout: Kopf mit Berlin-Skyline und Begrüßung / Reihe aus Tag, Jetzt+Gleich, Abfahrtstafel-Timer / Linie / Spruch. */
+:root{
+  --paper:#F6FAFE; --ink:#1B2744; --pencil:#2B3A66; --acc:#D43B55; --line:#E0475F;
+  --w1:#F8D56B; --w2:#F5A3B7; --w3:#98D9BE; --w4:#9CC8F2; --w5:#F7BA8C; --board:#F7D63C;
+  --rad:26px 34px 22px 38px / 34px 22px 38px 26px;
+  --rad-s:16px 22px 14px 24px / 22px 14px 24px 16px;
+  --f-display:'Gochi Hand','Patrick Hand','Comic Sans MS',system-ui,sans-serif;
+  --f-body:'Patrick Hand','Comic Sans MS',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+h1,h2,p{margin:0}
+body{
+  margin:0;background:var(--paper) url("img/papier.jpg") center/cover fixed;color:var(--ink);font-family:var(--f-body);font-size:22px;line-height:1.2;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  display:none;content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 .25  0 0 0 0 .3  0 0 0 0 .4  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+}
+.wrapper{position:relative;z-index:1;max-width:1700px;margin:0 auto}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
+.tab{font-variant-numeric:tabular-nums}
 
-  :root{
-    --bg:#FBF6EA;
-    --bg-alt:#F3ECDA;
-    --surface:#FFFFFF;
-    --surface-2:#FFFDF8;
-    --ink:#213B5C;
-    --ink-soft:#5A6C85;
-    --blue:#3E7CC2;
-    --blue-deep:#2C5C94;
-    --green:#2F5B3E;
-    --green-deep:#1E3F2A;
-    --green-ink:#EAF3EA;
-    --yellow:#F0BF3B;
-    --yellow-deep:#C99416;
-    --pink:#E8749A;
-    --pink-deep:#C85578;
-    --border:#E1D6BA;
-    --shadow:rgba(33,59,92,.14);
-    --ring:rgba(240,191,59,.55);
-    --accent-bg:#E4F0FC;
-    --accent-border:#BEDBF5;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#0F1A2B;
-      --bg-alt:#15223A;
-      --surface:#1A2A44;
-      --surface-2:#1F3150;
-      --ink:#F1ECDC;
-      --ink-soft:#B9C6DC;
-      --blue:#79ABE6;
-      --blue-deep:#5892D3;
-      --green:#5B9A73;
-      --green-deep:#173726;
-      --green-ink:#E6F2E9;
-      --yellow:#F3C94E;
-      --yellow-deep:#D9A824;
-      --pink:#F0A0BC;
-      --pink-deep:#E8749A;
-      --border:#2C3E5E;
-      --shadow:rgba(0,0,0,.45);
-      --ring:rgba(243,201,78,.45);
-      --accent-bg:#17293F;
-      --accent-border:#2C4A6E;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0F1A2B;
-    --bg-alt:#15223A;
-    --surface:#1A2A44;
-    --surface-2:#1F3150;
-    --ink:#F1ECDC;
-    --ink-soft:#B9C6DC;
-    --blue:#79ABE6;
-    --blue-deep:#5892D3;
-    --green:#5B9A73;
-    --green-deep:#173726;
-    --green-ink:#E6F2E9;
-    --yellow:#F3C94E;
-    --yellow-deep:#D9A824;
-    --pink:#F0A0BC;
-    --pink-deep:#E8749A;
-    --border:#2C3E5E;
-    --shadow:rgba(0,0,0,.45);
-    --ring:rgba(243,201,78,.45);
-    --accent-bg:#17293F;
-    --accent-border:#2C4A6E;
-  }
+/* ---------- Kopf: Begrüßung + Skyline ---------- */
+.head{position:relative;display:flex;align-items:center;margin-top:18px;min-height:clamp(250px,26vw,400px);padding:24px 32px;border-radius:var(--rad);border:3.5px solid var(--pencil);background:#cfe6fa url("img/skyline.jpg") center 78%/cover;box-shadow:5px 5px 0 rgba(27,39,68,.18)}
+.greet-text{position:relative;z-index:2;min-width:0;max-width:62%}
+.greet-text h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.6rem,6.4vw,6rem);line-height:1;color:var(--acc);text-wrap:balance;text-shadow:0 0 10px #fff,0 0 4px #fff,2px 2px 0 #fff}
+.greet-text .sub{font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.6rem);margin-top:8px;text-shadow:0 0 10px #fff,0 0 4px #fff,2px 2px 0 #fff}
+.baer{position:absolute;right:2%;bottom:-6px;height:106%;width:auto;mix-blend-mode:multiply;-webkit-mask-image:radial-gradient(closest-side,#000 78%,transparent);mask-image:radial-gradient(closest-side,#000 78%,transparent);pointer-events:none;z-index:1}
+.bubble{
+  position:absolute;z-index:3;right:calc(2% + clamp(230px,24vw,380px));top:14px;font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.6rem);
+  background:#fff;border:3.5px solid var(--pencil);border-radius:var(--rad-s);padding:4px 22px;transform:rotate(3deg);
+  box-shadow:4px 4px 0 rgba(27,39,68,.2);
+}
+.bubble::after{content:"";position:absolute;left:26px;bottom:-14px;width:22px;height:22px;background:#fff;border-right:3.5px solid var(--pencil);border-bottom:3.5px solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
-  *{box-sizing:border-box;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:'Nunito',system-ui,sans-serif;
-    font-size:17px;
-    padding-inline:0;
-  }
-  h1,h2,h3,.display{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    text-wrap:balance;
-    margin:0;
-  }
-  .hand{
-    font-family:'Caveat',cursive;
-  }
-  .wrap{
-    max-width:1180px;
-    margin-inline:auto;
-    padding-inline:16px;
-  }
-  @media (min-width:1500px){
-    .wrap{ max-width:min(96vw,1900px); }
-  }
-  @media (min-width:2000px){
-    .wrap{ max-width:min(94vw,2600px); }
-  }
-  button{font-family:inherit;}
-  .tabular{font-variant-numeric:tabular-nums;}
+/* ---------- Raster ---------- */
+.board{
+  display:grid;gap:26px;align-items:stretch;padding-block:26px 48px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);
+  grid-template-areas:"day now timer" "line line line" "spruch spruch spruch";
+}
+@media (max-width:1100px){
+  .board{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"day timer" "now now" "line line" "spruch spruch"}
+}
+@media (max-width:700px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"day" "now" "timer" "line" "spruch"}
+  .greet-text{max-width:100%}
+  .baer{height:62%;opacity:.9}.head{padding:18px}
+  .bubble{display:none}
+}
+.day{grid-area:day;--tone:var(--w4)}
+.now{grid-area:now;--tone:var(--w1)}
+.timer{grid-area:timer}
+.lineblk{grid-area:line;--tone:var(--w5)}
+.spruch{grid-area:spruch;--tone:var(--w2)}
 
+/* ---------- Karte: Buntstiftrahmen + Aquarellfläche ---------- */
+.panel{position:relative;isolation:isolate;padding:24px 30px;min-width:0;--fill:#fff}
+.panel::before{
+  content:"";position:absolute;inset:0;z-index:-2;border:3.5px solid var(--pencil);border-radius:var(--rad);
+  background:var(--fill);filter:url(#rough);
+}
+.panel::after{
+  content:"";position:absolute;inset:8px;z-index:-1;pointer-events:none;opacity:.8;mix-blend-mode:multiply;
+  background:
+    radial-gradient(60% 75% at 12% 18%,var(--tone) 0%,transparent 72%),
+    radial-gradient(42% 55% at 94% 90%,var(--tone) 0%,transparent 70%);
+  filter:url(#wash);
+}
+.tag{font-family:var(--f-display);font-size:1.6rem;color:var(--acc);display:block;margin-bottom:4px}
 
-  /* ---------- GREETING BAR (below hero image) ---------- */
-  .greetbar{
-    background:var(--surface) url('greetbar_bg.jpg') center center / cover no-repeat;
-    border-bottom:1px solid var(--border);
-    box-shadow:0 4px 14px var(--shadow);
-  }
-  .greetbar-inner{
-    max-width:1180px;
-    margin-inline:auto;
-    padding:16px 16px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:nowrap;
-  }
-  @media (min-width:1500px){
-    .greetbar-inner{ max-width:min(96vw,1900px); }
-  }
-  @media (min-width:2000px){
-    .greetbar-inner{ max-width:min(94vw,2600px); }
-  }
-  @media (max-width:1499px){
-    .greetbar-inner{flex-wrap:wrap;}
-    .hero-dates{text-align:left; width:100%;}
-  }
-  .hero-greet{min-width:0;flex:1 1 auto;text-align:left;}
-  .pre-greet{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:700;
-    font-size:clamp(1.3rem,4.4vw,2.3rem);
-    color:var(--blue-deep);
-    margin:0 0 2px;
-    line-height:1.1;
-  }
-  .hero-greet h1{
-    font-size:clamp(1.4rem,4.4vw,2.3rem);
-    color:#D64545;
-  }
-  .hero-dates{
-    text-align:right;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    background:var(--bg-alt);
-    border:1px solid var(--border);
-    border-radius:28px;
-    padding:28px 40px;
-    flex:none;
-  }
-  .hero-dates .row{
-    font-size:clamp(3.2rem,6.8vw,4.4rem);
-    color:var(--ink);
-    white-space:nowrap;
-  }
-  .hero-dates .row.en{
-    font-size:clamp(1.6rem,3.4vw,2.2rem);
-  }
-  .hero-dates .row .label{
-    font-weight:800;
-    color:var(--blue-deep);
-  }
-  .hero-dates .row.en .label{
-    color:var(--pink-deep);
-  }
-  .ordinal{
-    font-size:.6em;
-    color:#D64545;
-    font-weight:800;
-    vertical-align:baseline;
-  }
+/* ---------- Tag + Datum ---------- */
+.wd{font-family:var(--f-display);font-size:clamp(3rem,6.2vw,6.4rem);line-height:1;color:var(--ink);overflow-wrap:anywhere}
+.date-de{font-family:var(--f-display);font-size:clamp(1.8rem,3.2vw,3rem);line-height:1.1;margin-top:8px}
+.sep{border:0;border-top:3px dashed var(--pencil);opacity:.4;margin:14px 0}
+.date-en{font-family:var(--f-display);font-size:clamp(1.7rem,3vw,2.8rem);line-height:1.1;color:#2559A8}
 
-  /* ---------- MAIN GRID ---------- */
-  main{padding-block:22px 28px;}
-  .grid{
-    display:grid;
-    grid-template-columns:1.15fr 1.05fr auto;
-    row-gap:18px;
-    column-gap:8px;
-    align-items:start;
-  }
-  @media (max-width:860px){
-    .grid{grid-template-columns:1fr;}
-  }
+/* ---------- Jetzt + Gleich ---------- */
+.now-main{display:flex;align-items:center;gap:22px;min-height:150px}
+.bigchip{
+  width:clamp(90px,10vw,150px);height:clamp(90px,10vw,150px);border-radius:50% 46% 52% 48%;flex:none;display:grid;place-items:center;
+  font-size:0;background:var(--sc,#fff) center/cover no-repeat;border:4px solid var(--pencil);box-shadow:0 0 0 5px var(--sc,transparent);
+}
+.now-name{font-family:var(--f-display);font-size:clamp(2.6rem,5.6vw,5.4rem);line-height:1;overflow-wrap:anywhere}
+.now-time{font-size:clamp(1.3rem,2vw,1.9rem);margin-top:6px}
+.now-left{font-family:var(--f-display);color:var(--acc);font-size:clamp(1.4rem,2.2vw,2.1rem)}
+.next{
+  margin-top:18px;padding-top:16px;border-top:3px dashed var(--pencil);display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  font-family:var(--f-display);font-size:clamp(1.5rem,2.4vw,2.2rem);
+}
+.next .chip{
+  width:56px;height:56px;border-radius:50% 46% 52% 48%;display:grid;place-items:center;font-size:0;
+  background:var(--sc,#fff) var(--img) center/cover no-repeat;border:3px solid var(--pencil);box-shadow:0 0 0 3px var(--sc,transparent);flex:none;
+}
+.next small{font-family:var(--f-body);font-size:1.2rem;opacity:.85}
 
-  .panel{
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:20px;
-    box-shadow:0 8px 24px var(--shadow);
-    overflow:hidden;
-  }
-  .panel-head{
-    display:flex; align-items:center; gap:10px;
-    padding:14px 18px;
-  }
-  .panel-head h2{
-    font-size:1.5rem;
-    color:inherit;
-  }
-  .panel-head .icon{width:24px;height:24px;flex:none;}
-  .panel-body{padding:0 16px 16px;}
+/* ---------- Abfahrtstafel-Timer ---------- */
+.timer{--fill:var(--board);--tone:var(--w1)}
+.timer::after{opacity:.35}
+.timer .tag{color:var(--ink);font-size:clamp(1.9rem,3vw,2.8rem)}
+.clock{
+  font-family:var(--f-display);line-height:1;font-size:clamp(5rem,9vw,9.5rem);display:flex;align-items:center;flex-wrap:wrap;
+  color:var(--ink);margin:2px 0 10px;
+}
+.clock #cMin,.clock #cSec{display:inline-block;min-width:1.25em;text-align:center}
+.clock .colon{opacity:.6;padding-bottom:.1em}
+.clock.warn{color:var(--acc)}
+.clock.done{animation:blink .6s steps(2) infinite;color:var(--acc)}
+@keyframes blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.clock.done{animation:none}}
+.bar{height:22px;border:3.5px solid var(--pencil);border-radius:var(--rad-s);background:#fff;overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;width:100%;background:var(--line);transition:width .4s linear;border-right:3px solid var(--pencil)}
+/* Bedienung für die Lehrkraft: klein und leise */
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{
+  appearance:none;border:3px solid var(--pencil);border-radius:var(--rad-s);background:#fff;font-family:var(--f-display);
+  font-size:1.25rem;padding:4px 16px;min-height:46px;min-width:46px;box-shadow:3px 3px 0 rgba(27,39,68,.25);
+}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.go{background:var(--acc);color:#fff;font-size:1.7rem;padding:4px 30px}
+.ctl.minor{margin-top:10px;opacity:.85}
+.ctl.minor .btn{font-size:1.05rem;min-height:40px;padding:2px 12px}
 
-  /* Timer ("Wir starten in") */
-  .timer-box{
-    background:transparent;
-    border:3px solid #D64545;
-    border-radius:20px;
-    box-shadow:none;
-    padding:12px 16px;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:16px;
-  }
-  .timer-title{
-    font-size:2.6rem;
-    color:#D64545;
-  }
-  .timer-display{
-    display:flex;
-    align-items:center;
-    gap:4px;
-  }
-  .timer-display.timer-danger .digit-value{
-    color:#D64545;
-  }
-  .digit-group{display:flex;gap:4px;}
-  .digit-stepper{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:2px;
-  }
-  .digit-arrow{
-    appearance:none;-webkit-appearance:none;
-    background:transparent;border:none;
-    padding:12px;
-    min-width:44px;
-    min-height:44px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    color:var(--blue-deep);
-    line-height:0;
-    border-radius:10px;
-  }
-  .digit-arrow:hover{background:var(--bg-alt);}
-  .digit-arrow:active{background:var(--accent-bg);}
-  .digit-arrow:disabled{
-    opacity:.3;
-    cursor:default;
-    background:transparent;
-  }
-  .digit-arrow svg{width:26px;height:26px;}
-  .digit-value{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-variant-numeric:tabular-nums;
-    font-size:clamp(2.1rem,4.6vw,2.8rem);
-    line-height:1;
-    color:var(--ink);
-    background:transparent;
-    border:none;
-    min-width:1.05em;
-    text-align:center;
-    padding:6px 4px;
-  }
-  .timer-colon{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-size:clamp(2.1rem,4.6vw,2.8rem);
-    color:var(--ink-soft);
-    align-self:center;
-    padding-bottom:20px;
-  }
-  .timer-actions{display:flex;gap:10px;}
+/* ---------- Die Linie ---------- */
+.lineblk{padding-block:20px 26px}
+.line-head{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.sign{
+  font-family:var(--f-display);font-size:1.8rem;background:var(--line);color:#fff;border:3.5px solid var(--pencil);
+  border-radius:12px;padding:0 16px;transform:rotate(-2deg);line-height:1.5;
+}
+.line-head .tag{margin:0}
+.klasse{margin-left:auto;font-size:1.15rem;opacity:.85}
+.line{display:flex;align-items:flex-start;padding-top:6px}
+.stop{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;padding:66px 4px 0}
+.stop::before{
+  content:"";position:absolute;left:0;right:0;top:calc(66px + var(--sz)/2 - 8px);height:16px;background:var(--line);border-block:3px solid var(--pencil);
+}
+.stop:first-child::before{left:50%}
+.stop:last-child::before{right:50%}
+.stop.up::before{background:#fff}
+.dot{
+  --sz:66px;position:relative;z-index:1;width:var(--sz);height:var(--sz);border-radius:50%;display:grid;place-items:center;
+  font-size:0;background:var(--sc,#fff) var(--img) center/cover no-repeat;border:4px solid var(--pencil);box-shadow:0 0 0 4px var(--sc,transparent);
+}
+.stop{--sz:66px}
+.stop.brk{--sz:30px}
+.stop.brk .dot{--sz:30px;background:#fff;border-width:4px}
+.stop .nm{font-family:var(--f-display);font-size:clamp(1.15rem,1.55vw,1.7rem);line-height:1.05;margin-top:10px;overflow-wrap:anywhere}
+.stop .tm{font-size:clamp(1rem,1.2vw,1.3rem);opacity:.85}
+.stop.brk .nm{font-size:clamp(1rem,1.25vw,1.4rem);color:#2559A8}
+.stop.past .dot{opacity:.5}
+.stop.past .nm,.stop.past .tm{opacity:.5}
+.stop.now{--sz:84px}
+.stop.now .dot{--sz:84px;box-shadow:0 0 0 7px var(--w1),0 0 0 11px var(--pencil);font-size:2.4rem}
+.stop.now.brk{--sz:44px}
+.stop.now.brk .dot{--sz:44px}
+.stop.now{padding-top:76px}
+.stop.now::before{top:calc(76px + var(--sz)/2 - 8px)}
+.here{
+  position:absolute;top:0;left:50%;translate:-50% 0;font-family:var(--f-display);font-size:1.25rem;white-space:nowrap;z-index:2;
+  background:#fff;color:var(--acc);border:3px solid var(--pencil);border-radius:var(--rad-s);padding:0 14px 0 8px;display:flex;align-items:center;
+}
+.zug{height:46px;width:auto;mix-blend-mode:multiply;margin-right:6px}
+.here::after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;width:14px;height:14px;background:#fff;border-right:3px solid var(--pencil);border-bottom:3px solid var(--pencil);transform:rotate(45deg)}
+.ok{position:absolute;right:-6px;top:-6px;width:26px;height:26px;border-radius:50%;background:var(--w3);border:3px solid var(--pencil);display:none;place-items:center}
+.stop.past:not(.brk) .ok{display:grid}
+@media (max-width:860px){
+  .line{flex-direction:column;gap:0;padding-left:6px}
+  .stop,.stop.now{flex-direction:row;align-items:center;gap:16px;text-align:left;padding:8px 0}
+  .stop::before,.stop.now::before{left:calc(var(--maxw,84px)/2 - 8px);right:auto;top:0;bottom:0;width:16px;height:auto;border-block:0;border-inline:3px solid var(--pencil)}
+  .stop:first-child::before{top:50%}
+  .stop:last-child::before{bottom:50%}
+  .dotwrap{width:84px;display:grid;place-items:center;flex:none}
+  .stop .nm{margin-top:0}
+  .here{position:static;translate:none;margin-right:6px}.zug{height:34px}
+  .here::after{display:none}
+}
 
-  .col-stack{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-    align-self:start;
-  }
-  .accent-panel{
-    background:var(--accent-bg);
-    border-color:var(--accent-border);
-    min-height:120px;
-    flex:1 1 auto;
-    display:flex;
-    flex-direction:column;
-    margin-top:16px;
-  }
-  .accent-panel .panel-head .icon{color:var(--blue-deep);}
-  .accent-panel .panel-head h2{color:#D64545;}
-  .daily-pick-text{
-    font-family:'Nunito',system-ui,sans-serif;
-    font-weight:700;
-    font-size:calc(1.55rem + 3pt);
-    line-height:1.5;
-    color:var(--ink);
-    margin:0;
-  }
-
-  /* Was ist heute wichtig */
-  .triple-exclaim{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:800;
-    font-size:1.5rem;
-    color:#D64545;
-    line-height:1;
-    letter-spacing:1px;
-    flex:none;
-  }
-  .picker-panel{min-height:399px;display:flex;flex-direction:column;}
-  .picker-panel .panel-body{min-height:1px;flex:1;display:flex;}
-  .daily-notes{
-    flex:1;
-    width:100%;
-    min-height:280px;
-    border:none;
-    background:transparent;
-    resize:none;
-    outline:none;
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:700;
-    font-size:clamp(1.8rem,3.6vw,2.6rem);
-    line-height:1.4;
-    color:var(--ink);
-    padding:2px 4px;
-  }
-  .daily-notes::placeholder{
-    color:var(--ink);
-    opacity:.45;
-  }
-  .btn{
-    appearance:none;border:none;border-radius:999px;
-    padding:10px 18px;
-    font-weight:800;font-size:1.15rem;
-    cursor:pointer;
-    display:inline-flex;align-items:center;gap:8px;
-    transition:transform .12s ease, box-shadow .12s ease;
-  }
-  .btn:active{transform:translateY(1px);}
-  .btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}
-  .btn-primary{background:var(--pink-deep);color:#fff;box-shadow:0 4px 12px rgba(200,85,120,.35);}
-  .btn-primary:hover{background:var(--pink);}
-  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--border);}
-  .btn-ghost:hover{color:var(--ink);}
-
-  .logo-panel{
-    background:transparent;
-    border:none;
-    box-shadow:none;
-    padding:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:16px;
-  }
-  .logo-link{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:44px;
-    height:44px;
-    flex:none;
-    border-radius:10px;
-    transition:transform .15s ease;
-  }
-  .logo-link:hover,
-  .logo-link:focus-visible{
-    transform:scale(1.08);
-  }
-  .logo-link img{
-    max-width:44px;
-    max-height:44px;
-    width:auto;
-    height:auto;
-    object-fit:contain;
-    display:block;
-  }
-
-  /* Tagesplan */
-  .tagesplan-panel{
-    text-align:right;
-    background:transparent;
-    border:none;
-    box-shadow:none;
-    overflow:visible;
-    margin-left:10px;
-    --tp-scale:1;
-    --tp-wscale:1;
-  }
-  .tagesplan-panel .panel-head{
-    justify-content:flex-end;
-  }
-  .tagesplan-panel .panel-head h2{
-    font-size:2.3rem;
-    color:#D64545;
-  }
-  .tagesplan-body{
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:calc(10px * var(--tp-scale));
-  }
-  .lesson-slot{
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    justify-content:flex-end;
-    gap:8px;
-  }
-  .lesson-sub-input{
-    width:375px;
-    height:40px;
-    border:none;
-    background:transparent;
-    outline:none;
-    text-align:right;
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:700;
-    font-size:1.8rem;
-    color:var(--ink);
-    padding:0 4px;
-    flex:none;
-  }
-  .lesson-sub-input::placeholder{
-    color:var(--ink-soft);
-    opacity:.4;
-  }
-  .lesson-sub-input:focus{
-    outline:2px solid var(--ring);
-    outline-offset:1px;
-    border-radius:6px;
-    background:rgba(255,255,255,.5);
-  }
-  .lesson-row{
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    gap:10px;
-  }
-  .lesson-box{
-    width:calc(206.25px * var(--tp-wscale));height:calc(82.5px * var(--tp-scale));
-    border-radius:calc(20px * var(--tp-wscale));
-    border:calc(3.75px * var(--tp-wscale)) solid var(--border);
-    background:var(--surface);
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    justify-content:flex-start;
-    gap:calc(12.5px * var(--tp-wscale));
-    padding:calc(5px * var(--tp-scale)) calc(15px * var(--tp-wscale)) calc(5px * var(--tp-scale)) calc(5px * var(--tp-wscale));
-    position:relative;
-    flex:none;
-    overflow:visible;
-    cursor:pointer;
-    box-shadow:0 5px 14px var(--shadow);
-    transition:box-shadow .2s ease, transform .12s ease;
-  }
-  .lesson-box:hover{
-    box-shadow:0 6px 18px var(--shadow);
-    transform:translateY(-1px);
-  }
-  .lesson-box:active{
-    transform:translateY(0);
-  }
-  .lesson-box:focus-visible{
-    outline:3px solid var(--ring);
-    outline-offset:2px;
-  }
-  .lesson-img{
-    width:calc(60px * var(--tp-wscale));
-    height:calc(60px * var(--tp-wscale));
-    flex:none;
-    object-fit:contain;
-  }
-  .lesson-img-empty{
-    width:calc(60px * var(--tp-wscale));
-    height:calc(60px * var(--tp-wscale));
-    flex:none;
-  }
-  .lesson-edit-hint{
-    position:absolute;
-    bottom:calc(-10px * var(--tp-wscale));left:calc(-10px * var(--tp-wscale));
-    width:calc(25px * var(--tp-wscale));height:calc(25px * var(--tp-wscale));
-    border-radius:50%;
-    background:var(--surface);
-    border:1.5px solid var(--border);
-    color:var(--ink-soft);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 2px 6px rgba(0,0,0,.2);
-  }
-  .lesson-edit-hint svg{width:calc(13.75px * var(--tp-wscale));height:calc(13.75px * var(--tp-wscale));}
-  .lesson-abbr{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:800;
-    font-size:calc(2.625rem * var(--tp-wscale));
-    line-height:1;
-    color:#000;
-  }
-  .lesson-row.current .lesson-box{
-    box-shadow:0 0 0 3px var(--ring), 0 4px 12px var(--shadow);
-  }
-  .lesson-row.past .lesson-box{
-    opacity:.55;
-  }
-  .lesson-check{
-    position:absolute;
-    top:calc(-17.5px * var(--tp-wscale));right:calc(-17.5px * var(--tp-wscale));
-    width:calc(46.25px * var(--tp-wscale));height:calc(46.25px * var(--tp-wscale));
-    border-radius:50%;
-    background:#2F9E5C;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 2px 8px rgba(0,0,0,.35);
-    z-index:5;
-  }
-  .lesson-check svg{width:calc(27.5px * var(--tp-wscale));height:calc(27.5px * var(--tp-wscale));stroke:#fff;fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
-  .lesson-break{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:700;
-    font-size:calc(1.625rem * var(--tp-wscale));
-    color:#1B3A6B;
-    padding:calc(2.5px * var(--tp-scale)) 2.5px;
-  }
-  .tagesplan-empty{
-    font-size:1.2rem;
-    color:var(--ink-soft);
-  }
-
-  /* Settings drawer */
-  .drawer{
-    position:fixed; inset:0;
-    background:rgba(15,26,43,.55);
-    display:flex; align-items:flex-end; justify-content:center;
-    padding:16px;
-    z-index:20;
-  }
-  .drawer-card{
-    background:var(--surface);
-    border-radius:20px 20px 12px 12px;
-    max-width:520px;width:100%;
-    max-height:min(80vh,640px);
-    overflow-y:auto;
-    padding:20px;
-    box-shadow:0 20px 50px rgba(0,0,0,.35);
-  }
-  .drawer-card h3{font-size:1.4rem;margin-bottom:4px;}
-  .drawer-card p.hint{color:var(--ink-soft);font-size:1.05rem;margin:4px 0 8px;}
-  .drawer-card label{display:block;font-weight:700;font-size:1.05rem;margin:14px 0 6px;}
-  .drawer-card textarea{
-    width:100%;min-height:96px;
-    border-radius:12px;border:1px solid var(--border);
-    background:var(--surface-2);color:var(--ink);
-    padding:10px 12px;font-family:'Nunito',sans-serif;font-size:1.1rem;
-    resize:vertical;
-  }
-  .drawer-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
-
-  .subject-picker-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(86px,1fr));
-    gap:10px;
-    margin-top:4px;
-  }
-  .subject-picker-btn{
-    appearance:none;
-    background:var(--surface-2);
-    border:2.5px solid var(--border);
-    border-radius:14px;
-    padding:10px 6px 8px;
-    min-height:76px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    cursor:pointer;
-    transition:transform .12s ease, box-shadow .12s ease;
-  }
-  .subject-picker-btn:hover{
-    box-shadow:0 4px 12px var(--shadow);
-    transform:translateY(-1px);
-  }
-  .subject-picker-btn:active{transform:translateY(0);}
-  .subject-picker-btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}
-  .subject-picker-btn img{width:32px;height:32px;flex:none;object-fit:contain;}
-  .subject-picker-dot{
-    width:24px;height:24px;
-    border-radius:50%;
-    flex:none;
-  }
-  .subject-picker-btn span:last-child{
-    font-family:'Baloo 2',system-ui,sans-serif;
-    font-weight:800;
-    font-size:1.2rem;
-    color:var(--ink);
-  }
-
-  /* ---------- Große Bildschirme (Klassenraum-Board) ---------- */
-  @media (min-width:1500px){
-    body{ font-size:1.4rem; }
-    .panel-head h2{ font-size:1.9rem; }
-    .panel-head .icon{ width:34px; height:34px; }
-    .timer-title{ font-size:3.1rem; }
-    .digit-value{ font-size:clamp(2.8rem,3.8vw,3.8rem); }
-    .timer-colon{ font-size:clamp(2.8rem,3.8vw,3.8rem); }
-    .digit-arrow{ min-width:56px; min-height:56px; padding:14px; }
-    .digit-arrow svg{ width:32px; height:32px; }
-    .daily-pick-text{ font-size:calc(1.85rem + 3pt); }
-    .triple-exclaim{ font-size:1.8rem; }
-    .daily-notes{ font-size:clamp(2rem,2.8vw,2.9rem); }
-    .logo-link{ width:64px; height:64px; }
-    .logo-link img{ max-width:64px; max-height:64px; }
-    .pre-greet{ font-size:clamp(1.8rem,3vw,2.9rem); }
-    .hero-greet h1{ font-size:clamp(1.7rem,3vw,2.8rem); }
-    .hero-dates .row{ font-size:clamp(3.8rem,4.8vw,5.2rem); }
-    .hero-dates .row.en{ font-size:clamp(1.9rem,2.4vw,2.6rem); }
-    .lesson-box{ width:calc(256.25px * var(--tp-wscale)); height:calc(102.5px * var(--tp-scale)); border-radius:calc(22.5px * var(--tp-wscale)); padding:calc(6.25px * var(--tp-scale)) calc(23.75px * var(--tp-wscale)) calc(6.25px * var(--tp-scale)) calc(6.25px * var(--tp-wscale)); gap:calc(16.25px * var(--tp-wscale)); }
-    .lesson-img{ width:calc(75px * var(--tp-wscale)); height:calc(75px * var(--tp-wscale)); }
-    .lesson-abbr{ font-size:calc(3.125rem * var(--tp-wscale)); }
-    .lesson-break{ font-size:calc(2rem * var(--tp-wscale)); }
-    .lesson-sub-input{ width:445px; height:48px; font-size:2.1rem; }
-    .tagesplan-panel .panel-head h2{ font-size:3.1rem; }
-    .btn{ font-size:1.3rem; padding:12px 22px; }
-    .drawer-card h3{ font-size:1.7rem; }
-    .drawer-card p.hint{ font-size:1.2rem; }
-    .drawer-card label{ font-size:1.2rem; }
-    .drawer-card textarea{ font-size:1.25rem; }
-    .tagesplan-empty{ font-size:1.4rem; }
-    .subject-picker-btn{ min-height:96px; padding:14px 8px 10px; }
-    .subject-picker-btn img{ width:42px; height:42px; }
-    .subject-picker-dot{ width:30px; height:30px; }
-    .subject-picker-btn span:last-child{ font-size:1.4rem; }
-  }
-
-  [hidden]{display:none!important;}
+/* ---------- Mutmachspruch ---------- */
+.spruch{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.spruch .tag{margin:0}
+.spruch-text{font-family:var(--f-display);font-size:clamp(2.2rem,4.6vw,4.4rem);line-height:1.1;text-wrap:balance;flex:1 1 420px;min-width:0}
+.spruch .btn{font-size:1.1rem}
 </style>
 
-<div class="greetbar">
-  <div class="greetbar-inner">
-    <div class="hero-greet">
-      <p class="pre-greet">Guten Morgen!</p>
-      <h1>Schön, dass du da bist!</h1>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rough" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <filter id="wash" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="8" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="28"/>
+      <feGaussianBlur stdDeviation="1.4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="wrapper">
+  <header class="head">
+    <div class="greet-text">
+      <h1 id="gruss">Guten Morgen, 4b!</h1>
+      <p class="sub">Schön, dass du da bist!</p>
     </div>
-    <div class="hero-dates">
-      <div class="row de tabular"><span class="label">Heute:</span> <span id="dateDe">–</span></div>
-      <div class="row en tabular"><span class="label">Today:</span> <span id="dateEn">–</span></div>
-    </div>
-  </div>
-</div>
+    <div class="bubble" id="bubble" aria-hidden="true">Hello!</div>
+    <img class="baer" src="img/baer.jpg" alt="" width="560" height="560">
+  </header>
 
-<main class="wrap">
-  <div class="grid">
+  <main class="board">
 
-    <!-- Timer + weiteres Feld -->
-    <div class="col-stack">
-    <div class="timer-box">
-      <h2 class="timer-title">Wir starten in:</h2>
-      <div class="timer-display" id="timerDisplay">
-        <div class="digit-group">
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="hT" data-dir="1" aria-label="Zehnerstunden erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-hT">0</div>
-            <button class="digit-arrow" data-digit="hT" data-dir="-1" aria-label="Zehnerstunden verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="hO" data-dir="1" aria-label="Stunden erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-hO">0</div>
-            <button class="digit-arrow" data-digit="hO" data-dir="-1" aria-label="Stunden verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
-        </div>
+    <section class="panel day" aria-label="Datum">
+      <span class="tag">Heute ist</span>
+      <div class="wd" id="wd">Dienstag</div>
+      <div class="date-de tab" id="dateDe">24. November 2026</div>
+      <hr class="sep">
+      <div class="date-en" id="dateEn">Tuesday, November 24th</div>
+    </section>
 
-        <span class="timer-colon">:</span>
-
-        <div class="digit-group">
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="mT" data-dir="1" aria-label="Zehnerminuten erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-mT">0</div>
-            <button class="digit-arrow" data-digit="mT" data-dir="-1" aria-label="Zehnerminuten verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="mO" data-dir="1" aria-label="Minuten erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-mO">0</div>
-            <button class="digit-arrow" data-digit="mO" data-dir="-1" aria-label="Minuten verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <span class="timer-colon">:</span>
-
-        <div class="digit-group">
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="sT" data-dir="1" aria-label="Zehnersekunden erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-sT">0</div>
-            <button class="digit-arrow" data-digit="sT" data-dir="-1" aria-label="Zehnersekunden verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
-          <div class="digit-stepper">
-            <button class="digit-arrow" data-digit="sO" data-dir="1" aria-label="Sekunden erhöhen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 15l7-7 7 7"/></svg>
-            </button>
-            <div class="digit-value" id="digit-sO">0</div>
-            <button class="digit-arrow" data-digit="sO" data-dir="-1" aria-label="Sekunden verringern">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-          </div>
+    <section class="panel now" aria-label="Jetzt und gleich">
+      <span class="tag" id="nowTag">Jetzt</span>
+      <div class="now-main">
+        <div class="bigchip" id="nowChip">Ma</div>
+        <div>
+          <div class="now-name" id="nowName">Mathe</div>
+          <div class="now-time tab" id="nowTime">08:00 – 08:45 Uhr</div>
+          <div class="now-left tab" id="nowLeft"></div>
         </div>
       </div>
-      <div class="timer-actions">
-        <button class="btn btn-primary" id="timerStart">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Start
-        </button>
-        <button class="btn btn-ghost" id="timerReset">Zurücksetzen</button>
-      </div>
-    </div>
+      <div class="next" id="next"></div>
+    </section>
 
-    <!-- Mutmach-Spruch oder Witz des Tages -->
-    <section class="panel accent-panel">
-      <div class="panel-head">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5 14.6 8.6l6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 19.8l1.4-6.3-4.8-4.3 6.4-.6Z"/></svg>
-        <h2 id="dailyPickTitle">Mutmach-Spruch des Tages</h2>
+    <section class="panel timer" aria-label="Timer">
+      <h2 class="tag">Wir starten in:</h2>
+      <div class="clock" id="clock" role="timer" aria-live="off"><span id="cMin">05</span><span class="colon">:</span><span id="cSec">00</span></div>
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <div class="ctl">
+        <button class="btn go" id="tGo" type="button">Start</button>
+        <button class="btn" id="tReset" type="button">Zurück</button>
       </div>
-      <div class="panel-body">
-        <p class="daily-pick-text" id="dailyPickText"></p>
+      <div class="ctl minor" id="tSet">
+        <button class="btn" id="tMinus" type="button" aria-label="Eine Minute weniger">−1</button>
+        <button class="btn" id="tPlus" type="button" aria-label="Eine Minute mehr">+1</button>
+        <button class="btn preset" data-min="1" type="button">1</button>
+        <button class="btn preset" data-min="5" type="button">5</button>
+        <button class="btn preset" data-min="10" type="button">10</button>
+        <button class="btn" id="tTest" type="button" title="Alarmton anhören">Ton testen</button>
       </div>
     </section>
 
-    <!-- Logo-Links -->
-    <section class="panel logo-panel">
-      <a class="logo-link" href="https://www.logo.de/" target="_blank" rel="noopener noreferrer" aria-label="logo! (öffnet in neuem Fenster)">
-        <img src="logo_logo.png" alt="logo!" />
-      </a>
-      <a class="logo-link" href="https://bibox2.westermann.de/" target="_blank" rel="noopener noreferrer" aria-label="BiBox (öffnet in neuem Fenster)">
-        <img src="logo_bibox.png" alt="BiBox" />
-      </a>
-      <a class="logo-link" href="https://www.taskcards.de/" target="_blank" rel="noopener noreferrer" aria-label="TaskCards (öffnet in neuem Fenster)">
-        <img src="logo_taskcards.png" alt="TaskCards" />
-      </a>
-    </section>
-    </div>
-
-    <!-- Was ist heute wichtig -->
-    <section class="panel picker-panel">
-      <div class="panel-head">
-        <span class="triple-exclaim" aria-hidden="true">!!!</span>
-        <h2>Was ist heute wichtig?</h2>
+    <section class="panel lineblk" aria-label="Tagesablauf">
+      <div class="line-head">
+        <span class="sign">4b</span>
+        <h2 class="tag">Unser Tag</h2>
+        <span class="klasse" id="planInfo">Dienstag</span>
       </div>
-      <div class="panel-body">
-        <textarea id="dailyNotes" class="daily-notes" placeholder="Keine wichtigen Infos für heute." spellcheck="false"></textarea>
-      </div>
+      <div class="line" id="line"></div>
     </section>
 
-    <!-- Tagesplan -->
-    <section class="panel tagesplan-panel">
-      <div class="panel-head">
-        <h2>Tagesplan</h2>
-      </div>
-      <div class="panel-body">
-        <div class="tagesplan-body" id="tagesplanBody"></div>
-      </div>
+    <section class="panel spruch" aria-label="Mutmachspruch">
+      <h2 class="tag">Mutmachspruch</h2>
+      <p class="spruch-text" id="spruch">Du schaffst das – Schritt für Schritt!</p>
+      <button class="btn" id="spruchNeu" type="button">Neuer Spruch</button>
     </section>
 
-  </div>
-</main>
-
-<div class="drawer" id="subjectDrawer" hidden>
-  <div class="drawer-card">
-    <h3>Fach für diese Stunde ändern</h3>
-    <p class="hint">Tippe ein anderes Fach an, um es für diesen Termin einzusetzen.</p>
-    <div class="subject-picker-grid" id="subjectPickerGrid"></div>
-    <div class="drawer-actions">
-      <button type="button" class="btn btn-ghost" id="subjectResetBtn">Zurücksetzen</button>
-      <button type="button" class="btn btn-ghost" id="subjectCancelBtn">Abbrechen</button>
-    </div>
-  </div>
+  </main>
 </div>
 
 <script>
 (function(){
   "use strict";
+  function pad(n){return n<10?'0'+n:''+n;}
+  function $(id){return document.getElementById(id);}
+  var TAGE=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  var MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  var DAYS_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function ord(n){var v=n%100;if(v>=11&&v<=13)return'th';switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';}}
 
-  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+  /* ---------- Begrüßung, Sprachen, Datum ---------- */
+  var HELLO=['Hello!','Merhaba!','Dzień dobry!','Bonjour!','Hola!','Привіт!','مرحبا!','Ciao!'];
+  var hi=0;
+  setInterval(function(){hi=(hi+1)%HELLO.length;$('bubble').textContent=HELLO[hi];},4000);
+  function renderHead(now){
+    var h=now.getHours();
+    $('gruss').textContent=(h<11?'Guten Morgen':(h<18?'Guten Tag':'Guten Abend'))+', 4b!';
+    $('wd').textContent=TAGE[now.getDay()];
+    $('dateDe').textContent=now.getDate()+'. '+MONATE[now.getMonth()]+' '+now.getFullYear();
+    $('dateEn').textContent=DAYS_EN[now.getDay()]+', '+MONTHS_EN[now.getMonth()]+' '+now.getDate()+ord(now.getDate());
+  }
 
-  /* ---------- Mutmach-Spruch / Witz des Tages ---------- */
-  var MUTMACH_SPRUECHE = [
-    'Du schaffst das – Schritt für Schritt!',
-    'Fehler sind Freunde des Lernens.',
-    'Übung macht dich immer besser.',
-    'Du bist mutiger, als du denkst.',
-    'Jeder Tag ist eine neue Chance.',
-    'Du musst nicht perfekt sein, nur du selbst.',
-    'Auch kleine Schritte bringen dich weiter.',
-    'Du kannst stolz auf dich sein.',
-    'Gemeinsam schaffen wir alles.',
-    'Ein Lächeln macht den Tag heller.',
-    'Du bist stärker, als du glaubst.',
-    'Niemand ist perfekt – und das ist okay.',
-    'Heute ist ein guter Tag zum Lernen.',
-    'Du schaffst mehr, als du denkst.',
-    'Sei stolz auf jeden kleinen Erfolg.',
-    'Fehler zeigen dir, wo du wachsen kannst.',
-    'Du bist einzigartig – genau richtig, wie du bist.',
-    'Trau dich, Neues auszuprobieren!',
-    'Mutig sein heißt, es trotzdem zu versuchen.',
-    'Du musst nicht alles auf einmal können.',
-    'Jeder fängt mal klein an.',
-    'Dein Bestes ist immer gut genug.',
-    'Lachen macht alles leichter.',
-    'Du wirst jeden Tag ein bisschen besser.',
-    'Glaub an dich – wir glauben an dich!',
-    'Auch schwierige Aufgaben werden leichter mit Übung.',
-    'Es ist okay, um Hilfe zu bitten.',
-    'Du hast schon so viel geschafft!',
-    'Sei freundlich zu dir selbst.',
-    'Kleine Erfolge sind auch Erfolge.',
-    'Du bist wichtig – genau so, wie du bist.',
-    'Traue dich, Fragen zu stellen.',
-    'Heute wird ein starker Tag.',
-    'Du kannst das – probier es einfach!',
-    'Jeder Fehler bringt dich weiter.',
-    'Sei stolz, dass du es versucht hast.',
-    'Gemeinsam sind wir stark.',
-    'Du bist auf einem guten Weg.',
-    'Es ist mutig, neu anzufangen.',
-    'Dein Lächeln kann andere aufmuntern.',
-    'Du schaffst heute etwas Neues.',
-    'Sei geduldig mit dir selbst.',
-    'Auch kleine Schritte zählen.',
-    'Du darfst stolz auf dich sein.',
-    'Vertrau dir selbst – du kannst mehr, als du denkst.',
-    'Jeder Tag bringt neue Möglichkeiten.',
-    'Du musst niemandem etwas beweisen.',
-    'Sei mutig, auch wenn es schwer ist.',
-    'Aus Fehlern wird man klug.',
-    'Du bist ein wichtiger Teil unserer Klasse.',
-    'Heute kannst du etwas Neues lernen.',
-    'Bleib dran – du schaffst das!',
-    'Du bist nie allein, wir helfen dir.',
-    'Ein guter Freund hilft, wenn es schwer wird.',
-    'Du wächst mit jeder Herausforderung.',
-    'Trau dich, deine Meinung zu sagen.',
-    'Du bist klüger, als du denkst.',
-    'Es ist okay, wenn nicht alles gleich klappt.',
-    'Du hast ein tolles Lächeln – zeig es öfter!',
-    'Sei stolz auf deine Ideen.',
-    'Auch die Sonne braucht manchmal Wolken, um schöner zu scheinen.',
-    'Du bist heute genau richtig.',
-    'Frag ruhig noch einmal nach.',
-    'Übe weiter, du wirst es schaffen.',
-    'Du kannst die Welt ein bisschen bunter machen.',
-    'Es ist stark, ehrlich zu sein.',
-    'Du darfst auch mal langsam sein.',
-    'Dein Einsatz zählt, auch wenn es nicht perfekt ist.',
-    'Du bist ein Gewinner, weil du es versuchst.',
-    'Auch Regentage haben etwas Schönes.',
-    'Du hast eine tolle Fantasie – nutze sie!',
-    'Sei neugierig, das bringt dich weiter.',
-    'Du kannst heute jemandem eine Freude machen.',
-    'Jeder darf mal einen schlechten Tag haben.',
-    'Du bist wertvoll, so wie du bist.',
-    'Trau dich, laut zu sagen: Ich weiß es!',
-    'Du wächst über dich hinaus.',
-    'Kleine Pausen geben dir neue Kraft.',
-    'Du bist ein Teamplayer.',
-    'Sei stolz, dass du dranbleibst.',
-    'Du schaffst auch schwierige Aufgaben.',
-    'Ein freundliches Wort kann viel bewirken.',
-    'Du bist heute ein Stück mutiger geworden.',
-    'Vertrauen wächst mit jedem Versuch.',
-    'Du bist gut, so wie du bist.',
-    'Bleib neugierig, das macht schlau.',
-    'Du kannst aus jedem Tag etwas lernen.',
-    'Auch kleine Erfolge feiert man.',
-    'Du bringst Farbe in unsere Klasse.',
-    'Sei stolz auf deinen eigenen Weg.',
-    'Du bist stärker als jedes Problem.',
-    'Manchmal reicht ein tiefer Atemzug.',
-    'Du schaffst das, glaub an dich.',
-    'Dein Lachen ist ansteckend – im guten Sinn!',
-    'Du wirst jeden Tag klüger.',
-    'Es ist okay, Fragen zu haben.',
-    'Du bist ein wichtiger Baustein unserer Klasse.',
-    'Trau dich, groß zu träumen.',
-    'Du machst das großartig!',
-    'Heute ist dein Tag – zeig, was in dir steckt!',
+  /* ---------- Mutmachsprüche ---------- */
+  var SPRUECHE=[
+    'Du schaffst das – Schritt für Schritt!','Fehler sind Freunde des Lernens.','Übung macht dich immer besser.',
+    'Du bist mutiger, als du denkst.','Jeder Tag ist eine neue Chance.','Du musst nicht perfekt sein, nur du selbst.',
+    'Auch kleine Schritte bringen dich weiter.','Du kannst stolz auf dich sein.','Gemeinsam schaffen wir alles.',
+    'Du bist stärker, als du glaubst.','Heute ist ein guter Tag zum Lernen.','Trau dich, Neues auszuprobieren!',
+    'Mutig sein heißt, es trotzdem zu versuchen.','Du musst nicht alles auf einmal können.','Dein Bestes ist immer gut genug.',
+    'Glaub an dich – wir glauben an dich!','Es ist okay, um Hilfe zu bitten.','Du hast schon so viel geschafft!',
+    'Jeder Fehler bringt dich weiter.','Du bist ein wichtiger Teil unserer Klasse.','Bleib dran – du schaffst das!',
+    'Du wächst mit jeder Herausforderung.','Trau dich, Fragen zu stellen.','Heute wird ein starker Tag.',
+    'Du wirst jeden Tag ein bisschen besser.','Sei stolz auf jeden kleinen Erfolg.','Gemeinsam sind wir stark.',
+    'Du machst das großartig!','Heute ist dein Tag – zeig, was in dir steckt!','Du bist klüger, als du denkst.'
   ];
-
-  var KINDERWITZE = [
-    'Was ist grün und klopft an der Tür? – Ein Klopfsalat!',
-    'Warum können Geister so schlecht lügen? – Weil man immer durch sie hindurchsieht.',
-    'Wie nennt man einen Bären ohne Zähne? – Einen Gummibär.',
-    'Was ist gelb und kann nicht schwimmen? – Ein Bagger.',
-    'Zwei Freunde kommen vom Schwimmen zurück. „Wie war das Wasser?“ – „Nass!“',
-    'Was sagt der Lehrer zum Buchstaben I? – „Mach mal einen Punkt!“',
-    'Warum ist das Mathebuch so traurig? – Weil es so viele Probleme hat.',
-    'Wie nennt man einen Dinosaurier, der nie still ist? – Einen Dino-Sagt-Was.',
-    'Was macht ein Keks unter einem Baum? – Er krümelt fröhlich vor sich hin.',
-    'Fritzchen soll einen Satz mit „Küste“ bilden. Er sagt: „Meine Oma küsste mich zum Geburtstag.“',
-    'Zwei Kühe stehen auf der Wiese. Sagt die eine: „Muh!“ Sagt die andere: „Ich wollte gerade dasselbe sagen!“',
-    'Warum tragen Bienen immer gestreifte Pullover? – Weil einfarbige ihnen nicht stehen.',
-    'Was sagt ein Schneemann im Sommer? – Nichts, er ist schon geschmolzen.',
-    'Wie nennt man einen Hund, der zaubern kann? – Einen Hokuspokus-Terrier.',
-    'Warum hat der Fußball Angst vorm Tor? – Weil er dort immer reingeschossen wird.',
-    'Was ist klein, rund und klopft ständig? – Ein Pingpongball beim Spielen.',
-    'Fragt der Lehrer: „Wo liegt Rom?“ – Fritzchen: „Auf Seite 32 im Atlas.“',
-    'Warum können Elefanten nicht Fahrrad fahren? – Weil sie keinen Daumen zum Klingeln haben.',
-    'Was sagt ein Buch zum anderen? – „Wir sollten uns mal wieder aufschlagen!“',
-    'Wie nennt man einen Frosch, der die Straße nicht überqueren will? – Vorsichtig.',
-    'Warum bringt der Pinguin immer einen Fisch mit zur Schule? – Für die Pause.',
-    'Was ist orange und läuft durch den Wald? – Eine Möhre auf Wanderschaft.',
-    'Zwei Freunde im Zoo: „Guck mal, ein Gorilla!“ – „Wo?“ – „Da drüben, hinter dem Zaun.“ – „Puh, zum Glück!“',
-    'Warum weint der Luftballon? – Weil ihm die Luft ausgegangen ist.',
-    'Was sagt ein Stern zum anderen? – „Schön, dass du heute auch leuchtest!“',
-    'Wie nennt man zwei Bananen, die zusammen tanzen? – Ein Banana-Split.',
-    'Fragt die Lehrerin: „Was ist die Hauptstadt von Frankreich?“ – Fritzchen: „Groß geschrieben!“',
-    'Warum hat der Roboter keine Angst vorm Gewitter? – Weil er Strom mag.',
-    'Was passiert, wenn zwei Schnecken ein Wettrennen machen? – Nichts Besonderes, es dauert nur sehr lange.',
-    'Wie nennt man einen Vogel, der immer zu spät kommt? – Nachtigall.',
-    'Warum sind Fußballer so gute Rechner? – Weil sie immer die Tore zählen.',
-    'Was sagt der Baum im Herbst? – „Jetzt werde ich mal richtig blättrig.“',
-    'Zwei Freunde backen einen Kuchen. „Wie viel Mehl brauchen wir?“ – „So viel, bis der Teig glücklich aussieht.“',
-    'Warum nimmt der Delfin sein Handy mit ins Wasser? – Damit er immer erreichbar ist.',
-    'Was sagt der Mond zur Sonne? – „Du bist mir manchmal echt zu hell!“',
-    'Wie nennt man einen Kaktus, der immer gut gelaunt ist? – Einen Sonnenschein mit Stacheln.',
-    'Warum hat die Uhr immer Hunger? – Weil sie ständig tickt.',
-    'Was macht ein Frosch, wenn sein Auto kaputt ist? – Er lässt es ab-quaken.',
-    'Fritzchen kommt zu spät zur Schule. „Warum kommst du zu spät?“ – „Ich habe geträumt, ich wäre in Amerika, und das dauert einfach länger.“',
-    'Warum können Vögel im Winter so entspannt sein? – Weil sie längst im warmen Süden sind.',
-    'Was sagt ein Regenschirm zum anderen? – „Halt mich fest, es wird stürmisch!“',
-    'Wie nennt man eine Kuh, die gerade Musik hört? – Einen Milchshake mit Kopfhörern.',
-    'Warum geht der Apfel zum Arzt? – Weil er sich nicht gut fühlt, er hat einen Wurm erwischt.',
-    'Was sagt der Zahn zum Zahnarzt? – „Bitte sei sanft, ich bin empfindlich.“',
-    'Zwei Freunde spielen Verstecken. Der eine zählt bis zehn – der andere versteckt sich hinter einem viel zu dünnen Baum.',
-    'Warum hat der Computer immer kalte Füße? – Weil er ein Fenster offen hat.',
-    'Was ist weiß, kalt und kommt von oben? – Schnee, der gute Laune bringt.',
-    'Wie nennt man ein Gespenst, das sich verlaufen hat? – Ein Irrlicht.',
-    'Fragt der Lehrer: „Nenn mir drei Tiere aus Afrika.“ – Fritzchen: „Ein Löwe und zwei Affen.“',
-    'Warum quaken Enten nicht, wenn sie schlafen? – Weil sie sonst aufwachen würden.',
-    'Was sagt ein Schneemann zum anderen? – „Riechst du auch Karotten?“',
-    'Wie nennt man einen Bleistift ohne Mine? – Nutzlos, aber lieb gemeint.',
-    'Warum lachen Kartoffeln so oft? – Weil Pommes gute Laune machen.',
-    'Was ist rund, süß und rollt durch die Küche? – Ein Keks auf Wanderschaft.',
-    'Zwei Freunde im Regen: „Hast du einen Schirm dabei?“ – „Nein, aber ich hab gute Laune!“',
-    'Warum hat der Hase eine Uhr dabei? – Damit er immer pünktlich zum Frühstück hoppelt.',
-    'Was sagt der Igel zum Kaktus? – „Bist du auch stachlig, weil du schüchtern bist?“',
-    'Wie nennt man einen Fisch, der Karriere macht? – Einen Star-Fisch.',
-    'Fritzchen malt ein Bild von seiner Familie im Auto. Die Lehrerin fragt: „Wo sitzt du?“ – „Ich fahre, natürlich!“',
-    'Warum ist der Schneemann so entspannt? – Weil ihm nichts unter die Haut geht.',
-    'Was sagt der Baum zum Wind? – „Blas mich nicht so um!“',
-    'Wie nennt man eine Fliege ohne Flügel? – Eine Fußgängerin.',
-    'Warum nimmt der Frosch immer Süßigkeiten mit? – Für den Hüpf-Notfall.',
-    'Was ist klein, grün und hüpft durch das Klassenzimmer? – Eine Erbse auf Klassenfahrt.',
-    'Zwei Schneeflocken unterhalten sich: „Woher kommst du?“ – „Von ganz oben!“',
-    'Warum können Spinnen so gut im Internet surfen? – Weil sie schon ihr eigenes Netz haben.',
-    'Was sagt die Kerze zur anderen? – „Sollen wir heute Abend leuchten gehen?“',
-    'Wie nennt man einen Papagei, der wegfliegt? – Einen Ausreißer mit Federn.',
-    'Fritzchen fragt seine Mutter: „Warum ist der Himmel blau?“ – „Weil er sich das ausgesucht hat!“',
-    'Warum ist der Ball immer müde? – Weil er ständig herumgekickt wird.',
-    'Was sagt ein Apfel zum anderen? – „Du siehst heute besonders knackig aus!“',
-    'Wie nennt man einen Kürbis, der singt? – Einen Halloween-Star.',
-    'Warum trägt der Maulwurf eine Sonnenbrille? – Damit ihn niemand unter der Erde erkennt.',
-    'Was ist bunt, süß und macht fröhlich? – Ein Regenbogen aus Bonbons.',
-    'Zwei Freunde bauen eine Sandburg. „Brauchen wir einen Wassergraben?“ – „Klar, für die Kroko-Fantasie!“',
-    'Warum hat die Schnecke keine Eile? – Weil sie ihr Haus immer dabei hat.',
-    'Was sagt der Teddybär zum Kind? – „Drück mich, dann geht’s dir gleich besser!“',
-    'Wie nennt man einen Vogel im Anzug? – Einen Pinguin.',
-    'Fritzchen soll rechnen: 5 plus 5. Er hält beide Hände hoch und sagt: „Zehn Finger, fertig!“',
-    'Warum ist der Luftballon so gut gelaunt? – Weil er immer aufgeblasen ist.',
-    'Was macht die Sonne morgens als Erstes? – Sie geht auf.',
-    'Wie nennt man ein Pferd, das nie müde wird? – Einen Dauerläufer mit Mähne.',
-    'Warum macht der Bär im Winter eine Pause? – Weil er seinen Winterschlaf braucht.',
-    'Was sagt der Regenwurm zur Schnecke? – „Lass uns langsam ums Haus schleichen.“',
-    'Zwei Freunde spielen Fußball im Regen. „Ist dir kalt?“ – „Nein, ich bin heiß aufs Tor!“',
-    'Warum liebt der Frosch den Frühling? – Weil dann alle Pfützen wieder gefüllt sind.',
-    'Was sagt der Marienkäfer zum Blatt? – „Darf ich hier kurz landen?“',
-    'Wie nennt man ein Zebra, das ganz still steht? – Einen Streifenwärter.',
-    'Fritzchen erzählt: „Mein Hund kann rechnen!“ – „Wirklich?“ – „Ja, wenn ich ihm ein Leckerli gebe, bellt er sofort zweimal: Mehr, mehr!“',
-    'Warum sind Bücher so klug? – Weil sie ganz viele Seiten haben.',
-    'Was macht die Uhr am Wochenende? – Sie tickt entspannter.',
-    'Wie nennt man einen Schmetterling im Winter? – Einen Frostfalter.',
-    'Warum ist der Schneemann nie allein? – Weil er immer eine Karotten-Nase zum Reden hat.',
-    'Was sagt das Meer zum Strand? – „Wir sehen uns bei Ebbe wieder!“',
-    'Zwei Freunde im Klassenzimmer: „Hast du deine Hausaufgaben gemacht?“ – „Klar, mein Kopf hat die ganze Nacht daran gearbeitet – im Traum!“',
-    'Warum trägt der Baum im Herbst bunte Kleider? – Weil er sich für den Winter schick macht.',
-    'Was sagt die Blume zur Biene? – „Schön, dass du vorbeigesummt bist!“',
-    'Wie nennt man einen Vogel, der immer zu früh kommt? – Frühstücksvogel.',
-    'Warum lacht die Sonne den ganzen Tag? – Weil sie so viele Strahlen hat.',
-    'Was sagt der letzte Schultag zum Sommer? – „Auf geht’s, ich hab schon Ferien-Gefühle!“',
-  ];
-
-  function renderDailyPick(){
-    var titleEl = document.getElementById('dailyPickTitle');
-    var textEl = document.getElementById('dailyPickText');
-    if(!titleEl || !textEl) return;
-    var isSpruch = Math.random() < 0.5;
-    var pool = isSpruch ? MUTMACH_SPRUECHE : KINDERWITZE;
-    var pick = pool[Math.floor(Math.random() * pool.length)];
-    titleEl.textContent = isSpruch ? 'Mutmach-Spruch des Tages' : 'Witz des Tages';
-    textEl.textContent = pick;
-  }
-
-  /* ---------- Date ---------- */
-  var dateDeEl = document.getElementById('dateDe');
-  var dateEnEl = document.getElementById('dateEn');
-
-  var EN_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-  function ordinalSuffix(n){
-    var v = n % 100;
-    if(v >= 11 && v <= 13) return 'th';
-    switch(n % 10){
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  }
-
-  function tick(){
-    var now = new Date();
-    var d = now.getDate(), mo = now.getMonth(), y = now.getFullYear();
-
-    var deStr = pad(d)+'.'+pad(mo+1)+'.'+y;
-    dateDeEl.textContent = deStr;
-
-    dateEnEl.innerHTML = d + '<span class="ordinal">' + ordinalSuffix(d) + '</span> ' + EN_MONTHS[mo] + ' ' + y;
-
-    renderTagesplan(now);
-  }
-
-  /* ---------- Timer ---------- */
-  var timerDigits = {hT:0, hO:0, mT:0, mO:0, sT:0, sO:0};
-  var timerDisplay = document.getElementById('timerDisplay');
-  var timerStartBtn = document.getElementById('timerStart');
-  var timerResetBtn = document.getElementById('timerReset');
-  var timerArrows = Array.prototype.slice.call(document.querySelectorAll('.digit-arrow'));
-  var timerRunning = false;
-  var timerRemaining = 0;
-  var timerIntervalId = null;
-  var audioCtx = null;
-
-  function renderTimerDigits(){
-    Object.keys(timerDigits).forEach(function(key){
-      document.getElementById('digit-'+key).textContent = timerDigits[key];
-    });
-  }
-
-  function setArrowsDisabled(disabled){
-    timerArrows.forEach(function(btn){ btn.disabled = disabled; });
-  }
-
-  timerArrows.forEach(function(btn){
-    btn.addEventListener('click', function(){
-      if(timerRunning) return;
-      var key = btn.dataset.digit;
-      var dir = parseInt(btn.dataset.dir, 10);
-      timerDigits[key] = (timerDigits[key] + dir + 10) % 10;
-      renderTimerDigits();
-    });
+  var sIdx=(function(){var d=new Date();return (d.getFullYear()*366+d.getMonth()*31+d.getDate())%SPRUECHE.length;})();
+  function showSpruch(){$('spruch').textContent=SPRUECHE[sIdx];}
+  $('spruchNeu').addEventListener('click',function(){
+    var n;do{n=Math.floor(Math.random()*SPRUECHE.length);}while(n===sIdx);
+    sIdx=n;showSpruch();
   });
+  showSpruch();
 
-  function digitsToSeconds(){
-    var h = timerDigits.hT * 10 + timerDigits.hO;
-    var m = timerDigits.mT * 10 + timerDigits.mO;
-    var s = timerDigits.sT * 10 + timerDigits.sO;
-    return h * 3600 + m * 60 + s;
-  }
-
-  function secondsToDigits(total){
-    if(total < 0) total = 0;
-    var h = Math.floor(total / 3600) % 100;
-    var rem = total % 3600;
-    var m = Math.floor(rem / 60);
-    var s = rem % 60;
-    timerDigits.hT = Math.floor(h / 10) % 10;
-    timerDigits.hO = h % 10;
-    timerDigits.mT = Math.floor(m / 10) % 10;
-    timerDigits.mO = m % 10;
-    timerDigits.sT = Math.floor(s / 10) % 10;
-    timerDigits.sO = s % 10;
-    renderTimerDigits();
-  }
-
-  function getAudioCtx(){
-    if(!audioCtx){
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if(!Ctx) return null;
-      audioCtx = new Ctx();
-    }
-    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
-    return audioCtx;
-  }
-
-  function playTone(ctx, freq, startTime, duration, peakGain){
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, startTime);
-    gain.gain.exponentialRampToValueAtTime(peakGain, startTime + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime);
-    osc.stop(startTime + duration + 0.05);
-  }
-
-  function playChime(){
-    var ctx = getAudioCtx();
-    if(!ctx) return;
-    var now = ctx.currentTime;
-    // Aufsteigender Dreiklang, dann gemeinsamer Ausklang – freundlich, aber gut hörbar
-    playTone(ctx, 523.25, now,        0.5, 0.22); // C5
-    playTone(ctx, 659.25, now + 0.18, 0.5, 0.22); // E5
-    playTone(ctx, 783.99, now + 0.36, 0.7, 0.22); // G5
-    playTone(ctx, 523.25, now + 0.62, 0.9, 0.16);
-    playTone(ctx, 659.25, now + 0.62, 0.9, 0.16);
-    playTone(ctx, 783.99, now + 0.62, 0.9, 0.16);
-  }
-
-  function updateTimerDanger(){
-    if(timerRemaining <= 60 && timerRemaining > 0){
-      timerDisplay.classList.add('timer-danger');
-    }else if(timerRemaining === 0){
-      timerDisplay.classList.add('timer-danger');
-    }else{
-      timerDisplay.classList.remove('timer-danger');
-    }
-  }
-
-  function timerTick(){
-    timerRemaining--;
-    if(timerRemaining <= 0){
-      timerRemaining = 0;
-      secondsToDigits(0);
-      updateTimerDanger();
-      clearInterval(timerIntervalId);
-      timerIntervalId = null;
-      timerRunning = false;
-      setArrowsDisabled(false);
-      timerStartBtn.disabled = false;
-      timerStartBtn.textContent = '';
-      timerStartBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Start';
-      playChime();
-      return;
-    }
-    secondsToDigits(timerRemaining);
-    updateTimerDanger();
-  }
-
-  timerStartBtn.addEventListener('click', function(){
-    if(timerRunning) return;
-    getAudioCtx(); // Audio früh freigeben (Nutzergeste)
-    var total = digitsToSeconds();
-    if(total <= 0) return;
-    timerRemaining = total;
-    timerRunning = true;
-    setArrowsDisabled(true);
-    timerStartBtn.disabled = true;
-    timerStartBtn.textContent = 'Läuft …';
-    updateTimerDanger();
-    timerIntervalId = setInterval(timerTick, 1000);
-  });
-
-  timerResetBtn.addEventListener('click', function(){
-    if(timerIntervalId){ clearInterval(timerIntervalId); timerIntervalId = null; }
-    timerRunning = false;
-    timerRemaining = 0;
-    timerDigits = {hT:0, hO:0, mT:0, mO:0, sT:0, sO:0};
-    renderTimerDigits();
-    timerDisplay.classList.remove('timer-danger');
-    setArrowsDisabled(false);
-    timerStartBtn.disabled = false;
-    timerStartBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Start';
-  });
-
-  /* ---------- Tagesplan ---------- */
-  var LESSON_CHECK_SVG = '<svg viewBox="0 0 24 24"><polyline points="4,13 10,19 20,6"/></svg>';
-
-  var SUBJECTS = {
-    'Deutsch':        { abbr:'De', color:'#D6323C', img:'lesson_deutsch.png' },
-    'Mathe':          { abbr:'Ma', color:'#2C5C94', img:'lesson_mathe.png' },
-    'Sachunterricht': { abbr:'Su', color:'#2F8F46', img:'lesson_sachunterricht.png' },
-    'Musik':          { abbr:'Mu', color:'#E0B400', img:'lesson_musik.png' },
-    'Kunst':          { abbr:'Ku', color:'#8B5FBF', img:'lesson_kunst.png' },
-    'Lebenskunde':    { abbr:'Lk', color:'#5A5A5A', img:'lesson_lebenskunde.png' },
-    'Sport':          { abbr:'Sp', color:'#222222', img:'lesson_sport.png' },
-    'Englisch':       { abbr:'En', color:'#E8791A', img:'lesson_englisch.png' },
-    'Computerraum':   { abbr:'PC', color:'#B8B8B8', img:'' },
-    'Klassenrat':     { abbr:'KR', color:'#1E5B2E', img:'lesson_klassenrat.jpg' }
+  /* ---------- Stundenplan als Linie ---------- */
+  var SUBJ={
+    'Deutsch':{abbr:'De',c:'#F28B82',img:'img/fach-deutsch.jpg'},'Mathe':{abbr:'Ma',c:'#8AB4F0',img:'img/fach-mathe.jpg'},'Sachunterricht':{abbr:'Su',c:'#8FD1A0',img:'img/fach-sachunterricht.jpg'},
+    'Musik':{abbr:'Mu',c:'#F7D774',img:'img/fach-musik.jpg'},'Kunst':{abbr:'Ku',c:'#C7A6EC',img:'img/fach-kunst.jpg'},'Lebenskunde':{abbr:'Lk',c:'#C3CAD6',img:'img/fach-lebenskunde.jpg'},
+    'Sport':{abbr:'Sp',c:'#A9B4CC',img:'img/fach-sport.jpg'},'Englisch':{abbr:'En',c:'#F6B98D',img:'img/fach-englisch.jpg'},'Klassenrat':{abbr:'KR',c:'#7CC9A0',img:'img/fach-klassenrat.jpg'}
   };
-
-  // Stundenplan Klasse 4b, gültig ab 31.08.2026 (aus dem Original-PDF übernommen)
-  var STUNDENPLAN = {
-    1: [ // Montag
-      { start:'08:00', end:'08:45', subject:'Deutsch' },
-      { start:'09:00', end:'09:45', subject:'Lebenskunde' },
-      { brk:'1. Hofpause' },
-      { start:'10:10', end:'10:55', subject:'Sachunterricht' },
-      { start:'11:05', end:'11:50', subject:'Deutsch' },
-      { brk:'Essen / 2. Hofpause' },
-      { start:'12:30', end:'13:15', subject:'Mathe' },
-      { start:'13:25', end:'14:10', subject:'Englisch' }
-    ],
-    2: [ // Dienstag
-      { start:'08:00', end:'08:45', subject:'Deutsch' },
-      { start:'09:00', end:'09:45', subject:'Deutsch' },
-      { brk:'1. Hofpause' },
-      { start:'10:10', end:'10:55', subject:'Musik' },
-      { start:'11:05', end:'11:50', subject:'Englisch' },
-      { brk:'Essen / 2. Hofpause' },
-      { start:'12:30', end:'13:15', subject:'Sachunterricht' },
-      { start:'13:25', end:'14:10', subject:'Mathe' }
-    ],
-    3: [ // Mittwoch
-      { start:'08:00', end:'08:45', subject:'Deutsch' },
-      { start:'09:00', end:'09:45', subject:'Sport' },
-      { brk:'1. Hofpause' },
-      { start:'10:10', end:'10:55', subject:'Mathe' },
-      { start:'11:05', end:'11:50', subject:'Deutsch' },
-      { brk:'Essen / 2. Hofpause' },
-      { start:'12:30', end:'13:15', subject:'Sachunterricht' },
-      { start:'13:25', end:'14:10', subject:'Sachunterricht' }
-    ],
-    4: [ // Donnerstag
-      { start:'08:00', end:'08:45', subject:'Sport' },
-      { start:'09:00', end:'09:45', subject:'Musik' },
-      { brk:'1. Hofpause' },
-      { start:'10:10', end:'10:55', subject:'Kunst' },
-      { start:'11:05', end:'11:50', subject:'Kunst' },
-      { brk:'Essen / 2. Hofpause' },
-      { start:'12:30', end:'13:15', subject:'Mathe' },
-      { start:'13:25', end:'14:10', subject:'Englisch' }
-    ],
-    5: [ // Freitag
-      { start:'08:00', end:'08:45', subject:'Deutsch' },
-      { start:'09:00', end:'09:45', subject:'Sachunterricht' },
-      { brk:'1. Hofpause' },
-      { start:'10:10', end:'10:55', subject:'Sport' },
-      { start:'11:05', end:'11:50', subject:'Mathe' },
-      { brk:'Essen / 2. Hofpause' },
-      { start:'12:30', end:'13:15', subject:'Klassenrat' }
-    ]
+  var T=[['08:00','08:45'],['09:00','09:45'],['10:10','10:55'],['11:05','11:50'],['12:30','13:15'],['13:25','14:10']];
+  var P1='1. Hofpause',P2='Essen / 2. Hofpause';
+  function Ls(i,f){return{k:'l',s:T[i][0],e:T[i][1],f:f};}
+  var PLAN={
+    1:[Ls(0,'Deutsch'),Ls(1,'Lebenskunde'),P1,Ls(2,'Sachunterricht'),Ls(3,'Deutsch'),P2,Ls(4,'Mathe'),Ls(5,'Englisch')],
+    2:[Ls(0,'Deutsch'),Ls(1,'Deutsch'),P1,Ls(2,'Musik'),Ls(3,'Englisch'),P2,Ls(4,'Sachunterricht'),Ls(5,'Mathe')],
+    3:[Ls(0,'Deutsch'),Ls(1,'Sport'),P1,Ls(2,'Mathe'),Ls(3,'Deutsch'),P2,Ls(4,'Sachunterricht'),Ls(5,'Sachunterricht')],
+    4:[Ls(0,'Sport'),Ls(1,'Musik'),P1,Ls(2,'Kunst'),Ls(3,'Kunst'),P2,Ls(4,'Mathe'),Ls(5,'Englisch')],
+    5:[Ls(0,'Deutsch'),Ls(1,'Sachunterricht'),P1,Ls(2,'Sport'),Ls(3,'Mathe'),P2,Ls(4,'Klassenrat')]
   };
-
-  var tagesplanBody = document.getElementById('tagesplanBody');
-
-  function timeToDate(base, hhmm){
-    var parts = hhmm.split(':');
-    var d = new Date(base.getFullYear(), base.getMonth(), base.getDate(), parseInt(parts[0],10), parseInt(parts[1],10), 0, 0);
-    return d;
-  }
-
-  var lessonOverrides = {}; // key "jsDay_idx" -> Fachname (Überschreibung nur für die aktuelle Sitzung)
-  var activeOverrideKey = null;
-
-  var substituteTeachers = {}; // key "jsDay_idx" -> eingetragener Vertretungslehrer (nur aktuelle Sitzung)
-
-  function escapeAttr(str){
-    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  function renderTagesplan(now){
-    if(!tagesplanBody) return;
-    // Während gerade in ein Vertretungsfeld getippt wird, nicht neu rendern (sonst geht der Fokus verloren)
-    var active = document.activeElement;
-    if(active && active.classList && active.classList.contains('lesson-sub-input')){
-      return;
+  function mins(hhmm){var p=hhmm.split(':');return +p[0]*60+ +p[1];}
+  /* Pausen bekommen Zeiten aus ihren Nachbarn */
+  function timeline(day){
+    var src=PLAN[day],out=[],i;
+    for(i=0;i<src.length;i++){
+      var it=src[i];
+      if(typeof it==='string'){
+        out.push({k:'b',name:it,s:src[i-1].e,e:src[i+1].s});
+      }else{out.push(it);}
     }
-    var jsDay = now.getDay(); // 0=So … 6=Sa
-    var plan = STUNDENPLAN[jsDay];
-    if(!plan){
-      tagesplanBody.innerHTML = '<p class="tagesplan-empty">Heute kein Unterricht.</p>';
-      return;
+    return out;
+  }
+  var CHECK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B2744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 6.5"/></svg>';
+  var lastKey='';
+  function render(now){
+    var day=now.getDay(),weekend=false;
+    if(day===0||day===6){day=1;weekend=true;}
+    var tl=timeline(day),nowM=now.getHours()*60+now.getMinutes();
+    var cur=-1,i;
+    if(!weekend){
+      for(i=0;i<tl.length;i++){if(nowM>=mins(tl[i].s)&&nowM<mins(tl[i].e)){cur=i;break;}}
     }
-    var html = '';
-    plan.forEach(function(item, idx){
-      if(item.brk){
-        html += '<div class="lesson-break">'+item.brk+'</div>';
-        return;
+    var before=!weekend&&cur<0&&nowM<mins(tl[0].s);
+    var after=!weekend&&cur<0&&nowM>=mins(tl[tl.length-1].e);
+    /* Linie */
+    var key=day+'|'+weekend+'|'+cur+'|'+before+'|'+after,html='';
+    if(key!==lastKey){
+      lastKey=key;
+      for(i=0;i<tl.length;i++){
+        var it=tl[i];
+        var st=weekend?'up':(cur===i?'now':((cur>i||after||(cur<0&&!before&&nowM>=mins(it.e)))?'past':'up'));
+        if(it.k==='b'){
+          html+='<div class="stop brk '+st+'">'+(st==='now'?'<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>':'')+'<span class="dotwrap"><span class="dot"></span></span><span class="lbl"><span class="nm">'+it.name+'</span></span></div>';
+        }else{
+          var sj=SUBJ[it.f];
+          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?'<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>':'')+'<span class="dotwrap"><span class="dot">'+sj.abbr+'<span class="ok">'+CHECK+'</span></span></span><span class="lbl"><span class="nm">'+it.f+'</span><br><span class="tm tab">'+it.s+'</span></span></div>';
+        }
       }
-      var key = jsDay+'_'+idx;
-      var subjectName = lessonOverrides[key] || item.subject;
-      var subj = SUBJECTS[subjectName] || { abbr:'?', color:'#999', img:'' };
-      var startD = timeToDate(now, item.start);
-      var endD = timeToDate(now, item.end);
-      var state = 'upcoming';
-      if(now >= endD){ state = 'past'; }
-      else if(now >= startD && now < endD){ state = 'current'; }
-      var subValue = substituteTeachers[key] || '';
-      html += '<div class="lesson-slot">'
-        + '<input type="text" class="lesson-sub-input" placeholder="" data-key="'+key+'" value="'+escapeAttr(subValue)+'" />'
-        + '<div class="lesson-row '+state+'">'
-        + '<div class="lesson-box" data-key="'+key+'" tabindex="0" role="button" aria-label="Fach ändern" style="border-color:'+subj.color+';color:'+subj.color+';">'
-        + (subj.img ? '<img class="lesson-img" src="'+subj.img+'" alt="'+subjectName+'" />' : '<span class="lesson-img lesson-img-empty"></span>')
-        + '<span class="lesson-abbr">'+subj.abbr+'</span>'
-        + '<span class="lesson-edit-hint">'+EDIT_HINT_SVG+'</span>'
-        + (state==='past' ? '<span class="lesson-check">'+LESSON_CHECK_SVG+'</span>' : '')
-        + '</div>'
-        + '</div>'
-        + '</div>';
-    });
-    tagesplanBody.innerHTML = html;
+      $('line').innerHTML=html;
+    }
+    $('planInfo').textContent=weekend?'Vorschau Montag':TAGE[now.getDay()];
+
+    /* Jetzt + Gleich */
+    var chip=$('nowChip'),nm=$('nowName'),tm=$('nowTime'),lf=$('nowLeft'),tag=$('nowTag');
+    var nextLesson=null,startAt=cur+1;
+    if(cur<0&&before){startAt=0;}
+    if(weekend){startAt=0;}
+    if(!after){for(i=Math.max(0,startAt);i<tl.length;i++){if(tl[i].k==='l'){nextLesson=tl[i];break;}}}
+    chip.style.display='';chip.style.backgroundImage='';lf.textContent='';
+    if(weekend){
+      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Wochenende!';tm.textContent='Am Montag geht es weiter.';
+    }else if(after){
+      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Schulschluss!';tm.textContent='Schönen Nachmittag.';
+    }else if(before){
+      tag.textContent='Gleich';chip.style.display='none';nm.textContent='Ankommen';tm.textContent='Der Unterricht beginnt um '+tl[0].s+' Uhr.';
+    }else if(tl[cur].k==='b'){
+      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Pause';tm.textContent=tl[cur].name+' · bis '+tl[cur].e+' Uhr';
+      lf.textContent='noch '+(mins(tl[cur].e)-nowM)+' Min';
+    }else{
+      var c=tl[cur],sj2=SUBJ[c.f];
+      tag.textContent='Jetzt';chip.textContent=sj2.abbr;chip.style.setProperty('--sc',sj2.c);chip.style.backgroundImage='url('+sj2.img+')';
+      nm.textContent=c.f;tm.textContent=c.s+' – '+c.e+' Uhr';lf.textContent='noch '+(mins(c.e)-nowM)+' Min';
+    }
+    var nx=$('next');
+    if(nextLesson){
+      var sj3=SUBJ[nextLesson.f];
+      nx.innerHTML='<span>Gleich:</span><span class="chip" style="--sc:'+sj3.c+';--img:url('+sj3.img+')">'+sj3.abbr+'</span><span>'+nextLesson.f+'<br><small class="tab">'+nextLesson.s+' Uhr</small></span>';
+      nx.style.display='';
+    }else{nx.style.display='none';}
   }
 
-  /* ---------- Fach tauschen ---------- */
-  var EDIT_HINT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5 19.5 9.5 8 21H3v-5Z"/></svg>';
-
-  var subjectDrawer = document.getElementById('subjectDrawer');
-  var subjectPickerGrid = document.getElementById('subjectPickerGrid');
-  var subjectResetBtn = document.getElementById('subjectResetBtn');
-  var subjectCancelBtn = document.getElementById('subjectCancelBtn');
-
-  function openSubjectPicker(key){
-    activeOverrideKey = key;
-    if(!subjectPickerGrid) return;
-    var buttons = '';
-    Object.keys(SUBJECTS).forEach(function(name){
-      var s = SUBJECTS[name];
-      buttons += '<button type="button" class="subject-picker-btn" data-subject="'+name+'" style="border-color:'+s.color+';">'
-        + (s.img ? '<img src="'+s.img+'" alt="" />' : '<span class="subject-picker-dot" style="background:'+s.color+';"></span>')
-        + '<span>'+s.abbr+'</span>'
-        + '</button>';
-    });
-    subjectPickerGrid.innerHTML = buttons;
-    if(subjectDrawer){ subjectDrawer.hidden = false; }
+  /* ---------- Timer mit lautem Ton ---------- */
+  var setSec=300,remain=300,running=false,endAt=0,iv=null,ctx=null;
+  var clock=$('clock'),cMin=$('cMin'),cSec=$('cSec'),bar=$('bar'),goBtn=$('tGo'),setRow=$('tSet');
+  function showTimer(){
+    var s=Math.max(0,Math.ceil(remain));
+    cMin.textContent=pad(Math.floor(s/60));cSec.textContent=pad(s%60);
+    bar.style.width=(setSec>0?Math.max(0,remain/setSec)*100:0)+'%';
+    clock.classList.toggle('warn',running&&s<=10&&s>0);
   }
-
-  function closeSubjectPicker(){
-    activeOverrideKey = null;
-    if(subjectDrawer){ subjectDrawer.hidden = true; }
+  function enableSet(on){var b=setRow.querySelectorAll('button:not(#tTest)');for(var i=0;i<b.length;i++)b[i].disabled=!on;}
+  function audio(){
+    if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}
+    if(ctx.state==='suspended')ctx.resume();
+    return ctx;
   }
-
-  document.addEventListener('click', function(e){
-    var box = e.target.closest ? e.target.closest('.lesson-box') : null;
-    if(box && box.dataset.key){
-      openSubjectPicker(box.dataset.key);
-      return;
+  function beep(c,t,f,d,g,type){
+    var o=c.createOscillator(),a=c.createGain();
+    o.type=type;o.frequency.value=f;
+    a.gain.setValueAtTime(0.0001,t);a.gain.exponentialRampToValueAtTime(g,t+0.01);
+    a.gain.setValueAtTime(g,t+d-0.04);a.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(a);a.connect(c.destination);o.start(t);o.stop(t+d+0.02);
+  }
+  /* Schulglocken-Alarm: sechsmal Doppelton, volle Lautstärke, ca. 4 Sekunden */
+  function alarm(){
+    var c=audio();if(!c)return;
+    var t=c.currentTime+0.05;
+    for(var i=0;i<6;i++){
+      beep(c,t+i*0.65,988,0.28,0.9,'square');
+      beep(c,t+i*0.65+0.3,784,0.28,0.9,'square');
+      beep(c,t+i*0.65,1976,0.28,0.25,'sine');
     }
-    var pickerBtn = e.target.closest ? e.target.closest('.subject-picker-btn') : null;
-    if(pickerBtn && activeOverrideKey){
-      lessonOverrides[activeOverrideKey] = pickerBtn.dataset.subject;
-      closeSubjectPicker();
-      renderTagesplan(new Date());
-      return;
-    }
-    if(e.target === subjectDrawer){
-      closeSubjectPicker();
-    }
+  }
+  function finish(){
+    clearInterval(iv);iv=null;running=false;remain=0;showTimer();
+    clock.classList.add('done');goBtn.textContent='Nochmal';enableSet(true);goBtn.dataset.state='done';
+    alarm();
+  }
+  function tick(){
+    remain=(endAt-Date.now())/1000;
+    if(remain<=0){finish();return;}
+    showTimer();
+  }
+  function resetClock(){clock.classList.remove('done','warn');goBtn.dataset.state='';}
+  goBtn.addEventListener('click',function(){
+    audio();
+    if(goBtn.dataset.state==='done'){remain=setSec;resetClock();showTimer();}
+    if(running){clearInterval(iv);iv=null;running=false;goBtn.textContent='Weiter';enableSet(false);showTimer();return;}
+    if(remain<=0)return;
+    running=true;endAt=Date.now()+remain*1000;goBtn.textContent='Pause';enableSet(false);
+    iv=setInterval(tick,200);tick();
   });
-
-  document.addEventListener('keydown', function(e){
-    if(e.target.classList && e.target.classList.contains('lesson-sub-input')) return;
-    if(e.key !== 'Enter' && e.key !== ' ') return;
-    var box = e.target.closest ? e.target.closest('.lesson-box') : null;
-    if(box && box.dataset.key){
-      e.preventDefault();
-      openSubjectPicker(box.dataset.key);
-    }
+  $('tReset').addEventListener('click',function(){
+    clearInterval(iv);iv=null;running=false;remain=setSec;resetClock();goBtn.textContent='Start';enableSet(true);showTimer();
   });
-
-  document.addEventListener('input', function(e){
-    if(e.target.classList && e.target.classList.contains('lesson-sub-input')){
-      substituteTeachers[e.target.dataset.key] = e.target.value;
-    }
-  });
-
-  if(subjectResetBtn){
-    subjectResetBtn.addEventListener('click', function(){
-      if(activeOverrideKey){ delete lessonOverrides[activeOverrideKey]; }
-      closeSubjectPicker();
-      renderTagesplan(new Date());
-    });
+  $('tTest').addEventListener('click',alarm);
+  function setMin(m){
+    if(running)return;
+    m=Math.max(1,Math.min(99,m));setSec=m*60;remain=setSec;resetClock();goBtn.textContent='Start';showTimer();
   }
-  if(subjectCancelBtn){
-    subjectCancelBtn.addEventListener('click', closeSubjectPicker);
-  }
+  $('tPlus').addEventListener('click',function(){setMin(Math.round(setSec/60)+1);});
+  $('tMinus').addEventListener('click',function(){setMin(Math.round(setSec/60)-1);});
+  var pre=document.querySelectorAll('.preset');
+  for(var i=0;i<pre.length;i++){pre[i].addEventListener('click',function(){setMin(+this.getAttribute('data-min'));});}
+  showTimer();
 
-  /* ---------- Höhe von "Was ist heute wichtig?" an "Witz des Tages" angleichen ---------- */
-  var accentPanelEl = document.querySelector('.accent-panel');
-  var pickerPanelEl = document.querySelector('.picker-panel');
-  var dailyNotesEl = document.getElementById('dailyNotes');
-
-  function syncPickerPanelHeight(){
-    if(!accentPanelEl || !pickerPanelEl) return;
-    var accentRect = accentPanelEl.getBoundingClientRect();
-    var pickerRect = pickerPanelEl.getBoundingClientRect();
-    var h = accentRect.bottom - pickerRect.top;
-    if(h > 0){ pickerPanelEl.style.height = h + 'px'; }
-  }
-
-  /* Schrift im Notiz-Kasten verkleinern, falls der Text sonst nicht hineinpasst */
-  function fitDailyNotesFont(){
-    if(!dailyNotesEl) return;
-    dailyNotesEl.style.fontSize = ''; // zurück zur responsiven CSS-Basisgröße
-    var base = parseFloat(getComputedStyle(dailyNotesEl).fontSize);
-    var minSize = base * 0.35;
-    var size = base;
-    var guard = 0;
-    while(dailyNotesEl.scrollHeight > dailyNotesEl.clientHeight + 1 && size > minSize && guard < 60){
-      size -= 1;
-      dailyNotesEl.style.fontSize = size + 'px';
-      guard++;
-    }
-  }
-
-  function syncPickerPanel(){
-    syncPickerPanelHeight();
-    fitDailyNotesFont();
-  }
-
-  /* ---------- Timer-Kasten und Witz-des-Tages-Kasten auf die Timer-Breite verschmälern ---------- */
-  var timerBoxEl = document.querySelector('.timer-box');
-
-  function syncTimerWitzWidth(){
-    if(!timerBoxEl || !accentPanelEl) return;
-    // Erst lösen, um die natürliche (an den Inhalt angepasste) Breite des Timers zu ermitteln
-    timerBoxEl.style.width = '';
-    timerBoxEl.style.alignSelf = 'flex-start';
-    var contentWidth = Math.ceil(timerBoxEl.getBoundingClientRect().width);
-    if(contentWidth <= 0) return;
-    timerBoxEl.style.width = contentWidth + 'px';
-    accentPanelEl.style.width = contentWidth + 'px';
-    accentPanelEl.style.alignSelf = 'flex-start';
-  }
-
-  /* ---------- Stundenkärtchen so vergrößern, dass der Tagesplan unten mit der linken Spalte abschließt ---------- */
-  var colStackEl = document.querySelector('.col-stack');
-  var tagesplanPanelEl = document.querySelector('.tagesplan-panel');
-
-  function fitTagesplanCards(){
-    if(!tagesplanBody || !colStackEl || !tagesplanPanelEl) return;
-    if(!tagesplanBody.children.length) return; // noch nichts gerendert
-    // Erst auf 1 zurücksetzen, um die natürliche (unskalierte) Höhe der Kärtchen zu messen
-    tagesplanPanelEl.style.setProperty('--tp-scale', 1);
-    tagesplanPanelEl.style.setProperty('--tp-wscale', 1);
-    var naturalHeight = tagesplanBody.getBoundingClientRect().height;
-    if(naturalHeight <= 0) return;
-    // Die Kärtchen werden vor allem HÖHER, ihre Breite ist gedeckelt (--tp-wscale),
-    // damit sie die linke Spalte nicht zusammendrücken und dadurch einen Rückkopplungs-
-    // Effekt auslösen (schmalere Spalte → mehr Zeilenumbrüche → höhere Spalte → …).
-    var scale = 1;
-    for(var i = 0; i < 6; i++){
-      var bodyTop = tagesplanBody.getBoundingClientRect().top;
-      var colStackBottom = colStackEl.getBoundingClientRect().bottom;
-      var targetHeight = colStackBottom - bodyTop;
-      if(targetHeight <= 0) break;
-      var newScale = targetHeight / naturalHeight;
-      if(newScale < 0.6) newScale = 0.6;
-      if(newScale > 2.6) newScale = 2.6;
-      var newWScale = Math.min(newScale, 1.3);
-      tagesplanPanelEl.style.setProperty('--tp-scale', newScale);
-      tagesplanPanelEl.style.setProperty('--tp-wscale', newWScale);
-      if(Math.abs(newScale - scale) < 0.002){ scale = newScale; break; }
-      scale = newScale;
-    }
-  }
-
-  function syncBoardLayout(){
-    syncTimerWitzWidth();
-    syncPickerPanel();
-    fitTagesplanCards();
-  }
-
-  window.addEventListener('resize', syncBoardLayout);
-  if(window.ResizeObserver && accentPanelEl){
-    new ResizeObserver(syncBoardLayout).observe(accentPanelEl);
-  }
-  if(document.fonts && document.fonts.ready){
-    document.fonts.ready.then(syncBoardLayout);
-  }
-  if(dailyNotesEl){
-    dailyNotesEl.addEventListener('input', fitDailyNotesFont);
-  }
-
-  /* ---------- Init ---------- */
-  renderDailyPick();
-  tick();
-  setInterval(tick, 1000);
-  syncBoardLayout();
+  function loop(){var n=new Date();renderHead(n);render(n);}
+  loop();setInterval(loop,1000);
 })();
 </script>
-
-</body></html>
