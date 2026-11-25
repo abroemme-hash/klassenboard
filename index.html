@@ -134,7 +134,9 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .hw-head .tag{margin:0;font-size:1.8cqw}
 .btn.sm{font-size:1cqw;min-height:2.1cqw;min-width:2.1cqw;padding:.05cqw .8cqw;border-width:.14cqw;box-shadow:.1cqw .1cqw 0 rgba(27,39,68,.25)}
 .hw-list{list-style:none;margin:0;padding:0;display:grid;align-content:start;gap:.5cqw;flex:1;min-height:0;overflow:hidden}
-.hw-item{display:flex;align-items:center;gap:.8cqw;min-width:0}
+.hw-item{display:flex;align-items:center;gap:.8cqw;min-width:0;cursor:pointer;border-radius:.6cqw;padding:.15cqw .3cqw;margin:-.15cqw -.3cqw}
+.hw-item:hover{background:rgba(255,255,255,.7)}
+.hw-item:focus-visible{outline:.2cqw solid var(--w4);outline-offset:.1cqw}
 .hw-img{width:2.4cqw;height:2.4cqw;border-radius:.5cqw;flex:none;background:var(--sc,#fff) var(--img) center/100% 100% no-repeat;border:.14cqw solid var(--pencil);box-shadow:0 0 0 .14cqw var(--sc,transparent)}
 .hw-t{min-width:0;display:block}
 .hw-task{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;font-weight:500;font-size:1.15cqw;line-height:1.15;overflow-wrap:anywhere}
@@ -152,6 +154,8 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.35;
   border:3px solid var(--pencil);border-radius:18px;padding:22px 24px;box-shadow:6px 6px 0 rgba(27,39,68,.3);
 }
+.modal-card.small{width:min(420px,100%)}
+#hwDelTxt{margin:0;overflow-wrap:anywhere}
 .modal-card h2{font-size:22px;margin:0 0 12px;color:var(--acc)}
 .modal-card h3{font-size:16px;margin:20px 0 8px}
 .modal-card label{display:block;font-weight:600;margin:12px 0 4px}
@@ -311,6 +315,15 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     <h3>Eingetragen</h3>
     <ul class="m-list" id="hwAdmin"></ul>
     <p class="hint">Eine Hausaufgabe wird automatisch gelöscht, wenn die letzte Stunde des Fachs am Fälligkeitstag vorbei ist. Die Einträge bleiben nur in diesem Browser gespeichert.</p>
+  </div>
+<div class="modal" id="hwDel" hidden role="dialog" aria-modal="true" aria-labelledby="hwDelTitle">
+  <div class="modal-card small">
+    <h2 id="hwDelTitle">Hausaufgabe löschen?</h2>
+    <p id="hwDelTxt"></p>
+    <div class="m-actions">
+      <button class="m-btn primary" id="hwDelYes" type="button">Löschen</button>
+      <button class="m-btn" id="hwDelNo" type="button">Abbrechen</button>
+    </div>
   </div>
 </div>
 
@@ -484,13 +497,15 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   showTimer();
 
     /* ---------- Hausaufgaben ---------- */
+  var ALLG={abbr:'Allgemein',c:'#FFE08A',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#FFE9A8"/><path d="M32 10l6.6 14.4 15.7 1.8-11.7 10.7 3.2 15.5L32 44.6 18.2 52.4l3.2-15.5L9.7 26.2l15.7-1.8z" fill="#F8D56B" stroke="#2B3A66" stroke-width="3" stroke-linejoin="round"/></svg>')};
+  function sjOf(f){return SUBJ[f]||ALLG;}
   var HW_KEY='klassenboard-hausaufgaben-v1';
   var hw=[];
   var WD_KURZ=['So','Mo','Di','Mi','Do','Fr','Sa'];
   function hwLoad(){
     try{
       var r=localStorage.getItem(HW_KEY),a=r?JSON.parse(r):[];
-      if(Array.isArray(a)){hw=a.filter(function(h){return h&&SUBJ[h.fach]&&/^\d{4}-\d{2}-\d{2}$/.test(h.due)&&typeof h.text==='string';});}
+      if(Array.isArray(a)){hw=a.filter(function(h){return h&&(h.fach==='Allgemein'||SUBJ[h.fach])&&/^\d{4}-\d{2}-\d{2}$/.test(h.due)&&typeof h.text==='string';});}
     }catch(e){hw=[];}
   }
   function hwSave(){try{localStorage.setItem(HW_KEY,JSON.stringify(hw));}catch(e){}}
@@ -499,7 +514,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   /* Ablauf: Ende der letzten Stunde des Fachs am Fälligkeitstag, sonst Ende des Tages */
   function expiryOf(h){
-    var d=fromIso(h.due),pl=PLAN[d.getDay()],last=-1,i;
+    var d=fromIso(h.due),pl=h.fach==='Allgemein'?null:PLAN[d.getDay()],last=-1,i;
     if(pl){for(i=0;i<pl.length;i++){var it=pl[i];if(typeof it!=='string'&&it.f===h.fach){last=Math.max(last,mins(it.e));}}}
     if(last<0)return new Date(d.getFullYear(),d.getMonth(),d.getDate(),23,59,59);
     return new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(last/60),last%60,0);
@@ -527,8 +542,8 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     var ul=$('hwList'),html='',i;
     if(!list.length){ul.innerHTML='<li class="hw-empty">Keine Hausaufgaben.</li>';return;}
     for(i=0;i<list.length;i++){
-      var h=list[i],sj=SUBJ[h.fach],isToday=h.due===today;
-      html+='<li class="hw-item'+(isToday?' today':'')+'" style="--sc:'+sj.c+';--img:url('+sj.img+')"><span class="hw-img" aria-hidden="true"></span><span class="hw-t"><span class="hw-task"><span class="hw-fach">'+sj.abbr+'</span> '+esc(h.text)+'</span><span class="hw-due">'+dueLabel(h.due,today,tomorrow)+'</span></span></li>';
+      var h=list[i],sj=sjOf(h.fach),isToday=h.due===today;
+      html+='<li class="hw-item'+(isToday?' today':'')+'" data-id="'+esc(h.id)+'" role="button" tabindex="0" title="Zum Löschen anklicken" style="--sc:'+sj.c+';--img:url('+sj.img+')"><span class="hw-img" aria-hidden="true"></span><span class="hw-t"><span class="hw-task"><span class="hw-fach">'+sj.abbr+'</span> '+esc(h.text)+'</span><span class="hw-due">'+dueLabel(h.due,today,tomorrow)+'</span></span></li>';
     }
     ul.innerHTML=html;
     var items=ul.children,removed=0;
@@ -540,6 +555,9 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   }
   function nextLessonIso(fach){
     var base=new Date(),i;
+    if(fach==='Allgemein'){
+      for(i=1;i<=7;i++){var dd=new Date(base.getFullYear(),base.getMonth(),base.getDate()+i);if(PLAN[dd.getDay()])return isoOf(dd);}
+    }
     for(i=1;i<=21;i++){
       var d=new Date(base.getFullYear(),base.getMonth(),base.getDate()+i),pl=PLAN[d.getDay()],j;
       if(pl){for(j=0;j<pl.length;j++){if(typeof pl[j]!=='string'&&pl[j].f===fach)return isoOf(d);}}
@@ -547,14 +565,14 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     return isoOf(new Date(base.getFullYear(),base.getMonth(),base.getDate()+1));
   }
   var modal=$('hwModal'),fSel=$('hwFach'),fDate=$('hwDate'),fText=$('hwText'),fMsg=$('hwMsg'),dateTouched=false;
-  (function(){var o='',k;for(k in SUBJ){if(SUBJ.hasOwnProperty(k))o+='<option value="'+k+'">'+k+'</option>';}fSel.innerHTML=o;})();
+  (function(){var o='',k;for(k in SUBJ){if(SUBJ.hasOwnProperty(k))o+='<option value="'+k+'">'+k+'</option>';}fSel.innerHTML=o+'<option value="Allgemein">Allgemein (ohne Fach)</option>';})();
   function msg(text,kind){fMsg.textContent=text;fMsg.className='m-msg '+kind;fMsg.hidden=!text;}
   function hwAdminRender(){
     var list=hwSorted(),ul=$('hwAdmin'),html='',today=isoOf(new Date()),tomorrow=isoOf(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()+1)),i;
     if(!list.length){ul.innerHTML='<li class="m-empty">Noch nichts eingetragen.</li>';return;}
     for(i=0;i<list.length;i++){
       var h=list[i];
-      html+='<li><span class="m-txt"><b>'+SUBJ[h.fach].abbr+'</b> '+esc(h.text)+'<br><small>'+dueLabel(h.due,today,tomorrow)+'</small></span><button class="m-btn" type="button" data-del="'+esc(h.id)+'">Löschen</button></li>';
+      html+='<li><span class="m-txt"><b>'+sjOf(h.fach).abbr+'</b> '+esc(h.text)+'<br><small>'+dueLabel(h.due,today,tomorrow)+'</small></span><button class="m-btn" type="button" data-del="'+esc(h.id)+'">Löschen</button></li>';
     }
     ul.innerHTML=html;
   }
@@ -585,6 +603,29 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     if(!id)return;
     hw=hw.filter(function(h){return h.id!==id;});hwSave();hwShown='';hwRender(new Date());hwAdminRender();
   });
+  /* Anklicken einer Hausaufgabe auf dem Board: erst nachfragen, dann löschen */
+  var delModal=$('hwDel'),delId=null;
+  function hwById(id){var i;for(i=0;i<hw.length;i++){if(hw[i].id===id)return hw[i];}return null;}
+  function openDel(id){
+    var h=hwById(id);if(!h)return;
+    delId=id;
+    $('hwDelTxt').innerHTML='<b>'+esc(sjOf(h.fach).abbr)+'</b> '+esc(h.text);
+    delModal.hidden=false;$('hwDelNo').focus();
+  }
+  function closeDel(){delModal.hidden=true;delId=null;}
+  function itemOf(el){while(el&&el!==document){if(el.classList&&el.classList.contains('hw-item'))return el;el=el.parentNode;}return null;}
+  $('hwList').addEventListener('click',function(e){var li=itemOf(e.target);if(li)openDel(li.getAttribute('data-id'));});
+  $('hwList').addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ')return;
+    var li=itemOf(e.target);if(li){e.preventDefault();openDel(li.getAttribute('data-id'));}
+  });
+  $('hwDelYes').addEventListener('click',function(){
+    if(delId){hw=hw.filter(function(h){return h.id!==delId;});hwSave();hwShown='';hwRender(new Date());if(!modal.hidden)hwAdminRender();}
+    closeDel();
+  });
+  $('hwDelNo').addEventListener('click',closeDel);
+  delModal.addEventListener('click',function(e){if(e.target===delModal)closeDel();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!delModal.hidden)closeDel();});
   hwLoad();
 
   function loop(){
