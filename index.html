@@ -351,7 +351,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
           html+='<div class="stop brk '+st+'">'+(st==='now'?HERE:'')+'<span class="dot"></span><span class="nm">'+it.name+'</span></div>';
         }else{
           var sj=SUBJ[it.f];
-          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?HERE:'')+'<span class="dot">'+sj.abbr+'</span><span class="ok">'+CHECK+'</span><span class="nm">'+sj.abbr+'</span><span class="tm tab">'+it.s+'</span></div>';
+          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?HERE:'')+'<span class="dot">'+sj.abbr+'</span><span class="ok">'+CHECK+'</span><span class="nm">'+sj.abbr+'</span></div>';
         }
       }
       $('line').innerHTML=html;
