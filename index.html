@@ -34,9 +34,9 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   height:min(calc((100vw - 32px) * 9 / 16),calc(100vh - 16px));
   font-size:1.12cqw;line-height:1.25;hyphens:auto;
   display:grid;gap:1.1cqw;padding:1.2cqw;
-  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   grid-template-rows:8.2cqw minmax(0,1fr) 16.6cqw 7cqw auto;
-  grid-template-areas:"head head head" "timer now day" "line line line" "spruch spruch spruch" "links links links";
+  grid-template-areas:"head head" "timer day" "line line" "spruch spruch" "links links";
 }
 .links{grid-area:links;text-align:center;font-size:8pt;line-height:1.3;color:var(--ink)}
 .links a{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
@@ -78,10 +78,10 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .bubble::after{content:"";position:absolute;left:1.4cqw;bottom:-.75cqw;width:1.1cqw;height:1.1cqw;background:#fff;border-right:.2cqw solid var(--pencil);border-bottom:.2cqw solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
 /* ---------- Tag + Datum ---------- */
-.date-de{font-weight:700;font-size:3.5cqw;line-height:1.1;margin-top:.2cqw}
-.wd{font-weight:600;font-size:2.1cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
+.date-de{font-weight:700;font-size:4.2cqw;line-height:1.1;margin-top:.2cqw}
+.wd{font-weight:600;font-size:2.4cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
 .sep{border:0;border-top:.15cqw dashed var(--pencil);opacity:.4;margin:.8cqw 0}
-.date-en{font-weight:500;font-size:1.9cqw;line-height:1.2;color:var(--blue)}
+.date-en{font-weight:500;font-size:2.2cqw;line-height:1.2;color:var(--blue)}
 .ord{color:var(--acc);font-weight:700}
 
 /* ---------- Jetzt + Gleich ---------- */
@@ -107,7 +107,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .timer{--fill:var(--board);--tone:var(--w1);display:flex;flex-direction:column;justify-content:space-between}
 .timer::after{opacity:.3}
 .timer .tag{color:var(--ink);font-size:1.8cqw;margin-bottom:0}
-.clock{font-weight:700;line-height:1;font-size:5.2cqw;display:flex;align-items:center;color:var(--ink)}
+.clock{font-weight:700;line-height:1;font-size:6.2cqw;display:flex;align-items:center;color:var(--ink)}
 .clock #cMin,.clock #cSec{display:inline-block;min-width:1.3em;text-align:center}
 .clock .colon{opacity:.6;padding-bottom:.08em}
 .clock.warn{color:var(--acc)}
@@ -208,19 +208,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     <div class="date-en tab" id="dateEn">24<span class="ord">th</span> November 2026</div>
   </section>
 
-  <section class="panel now" aria-label="Jetzt und gleich">
-    <span class="tag" id="nowTag">Jetzt</span>
-    <div class="now-main">
-      <div class="bigchip" id="nowChip">Ma</div>
-      <div>
-        <div class="now-name" id="nowName">Mathe</div>
-        <div class="now-time tab" id="nowTime">08:00 – 08:45 Uhr</div>
-        <div class="now-left tab" id="nowLeft"></div>
-      </div>
-    </div>
-    <div class="next" id="next"></div>
-  </section>
-
   <section class="panel timer" aria-label="Timer">
     <h2 class="tag">Wir starten in:</h2>
     <div class="clock" id="clock" role="timer" aria-live="off"><span id="cMin">05</span><span class="colon">:</span><span id="cSec">00</span></div>
@@ -240,7 +227,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   <section class="panel lineblk" aria-label="Tagesablauf">
     <div class="line-head">
-      <h2 class="tag">Unser Tag</h2>
+      <h2 class="tag" id="lineTitle">Unser Tag</h2>
     </div>
     <div class="line" id="line"></div>
   </section>
@@ -343,6 +330,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     }
     var before=!weekend&&cur<0&&nowM<mins(tl[0].s);
     var after=!weekend&&cur<0&&nowM>=mins(tl[tl.length-1].e);
+    $('lineTitle').textContent=weekend?'Unser Tag am Montag':'Unser Tag';
     var key=day+'|'+weekend+'|'+cur+'|'+before+'|'+after,html='';
     if(key!==lastKey){
       lastKey=key;
@@ -358,33 +346,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
       }
       $('line').innerHTML=html;
     }
-
-    var chip=$('nowChip'),nm=$('nowName'),tm=$('nowTime'),lf=$('nowLeft'),tag=$('nowTag');
-    var nextLesson=null,startAt=cur+1;
-    if(cur<0&&before){startAt=0;}
-    if(weekend){startAt=0;}
-    if(!after){for(i=Math.max(0,startAt);i<tl.length;i++){if(tl[i].k==='l'){nextLesson=tl[i];break;}}}
-    chip.style.display='';chip.style.backgroundImage='';lf.textContent='';
-    if(weekend){
-      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Wochenende!';tm.textContent='Am Montag geht es weiter.';
-    }else if(after){
-      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Schulschluss!';tm.textContent='Schönen Nachmittag.';
-    }else if(before){
-      tag.textContent='Gleich';chip.style.display='none';nm.textContent='Ankommen';tm.textContent='Der Unterricht beginnt um '+tl[0].s+' Uhr.';
-    }else if(tl[cur].k==='b'){
-      tag.textContent='Jetzt';chip.style.display='none';nm.textContent='Pause';tm.textContent=tl[cur].name+' · bis '+tl[cur].e+' Uhr';
-      lf.textContent='noch '+(mins(tl[cur].e)-nowM)+' Min';
-    }else{
-      var c=tl[cur],sj2=SUBJ[c.f];
-      tag.textContent='Jetzt';chip.textContent=sj2.abbr;chip.style.setProperty('--sc',sj2.c);chip.style.backgroundImage='url('+sj2.img+')';
-      nm.textContent=c.f;tm.textContent=c.s+' – '+c.e+' Uhr';lf.textContent='noch '+(mins(c.e)-nowM)+' Min';
-    }
-    var nx=$('next');
-    if(nextLesson){
-      var sj3=SUBJ[nextLesson.f];
-      nx.innerHTML='<span>Gleich:</span><span class="chip" style="--sc:'+sj3.c+';--img:url('+sj3.img+')">'+sj3.abbr+'</span><span>'+nextLesson.f+'<br><small class="tab">'+nextLesson.s+' Uhr</small></span>';
-      nx.style.display='';
-    }else{nx.style.display='none';}
   }
 
   /* ---------- Timer mit lautem Ton ---------- */
