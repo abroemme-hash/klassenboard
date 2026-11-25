@@ -1,197 +1,170 @@
 <title>Klassenboard U-Bahn</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap">
 <style>
 /* Idee: Der Tag ist eine U-Bahn-Linie. Jede Stunde ist eine Haltestelle, "Du bist hier" zeigt die aktuelle.
-   Für die letzte Reihe: wenige Felder, sehr große Schrift, feste Fachfarben, starker Kontrast.
-   Layout: Kopf mit Berlin-Skyline und Begrüßung / Reihe aus Tag, Jetzt+Gleich, Abfahrtstafel-Timer / Linie / Spruch. */
+   Format: feste Bühne 16:9, die sich in das Fenster einpasst. Alle Größen in cqw (1 % der Bühnenbreite),
+   dadurch sieht das Board auf jedem Bildschirm gleich aus.
+   Schrift: Lexend, lokal eingebunden (für Lesen mit LRS entwickelt, weite Buchstabenabstände). */
+@font-face{font-family:'Lexend';src:url('fonts/Lexend.ttf') format('truetype');font-weight:100 900;font-style:normal;font-display:swap}
 :root{
-  --paper:#F6FAFE; --ink:#1B2744; --pencil:#2B3A66; --acc:#D43B55; --line:#E0475F;
+  --paper:#F6FAFE; --ink:#1B2744; --pencil:#2B3A66; --acc:#C8334D; --line:#E0475F; --blue:#1F59A8;
   --w1:#F8D56B; --w2:#F5A3B7; --w3:#98D9BE; --w4:#9CC8F2; --w5:#F7BA8C; --board:#F7D63C;
   --rad:26px 34px 22px 38px / 34px 22px 38px 26px;
   --rad-s:16px 22px 14px 24px / 22px 14px 24px 16px;
-  --f-display:'Gochi Hand','Patrick Hand','Comic Sans MS',system-ui,sans-serif;
-  --f-body:'Patrick Hand','Comic Sans MS',system-ui,sans-serif;
+  --f:'Lexend','Verdana','Arial',sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 h1,h2,p{margin:0}
+html,body{height:100%}
 body{
-  margin:0;background:var(--paper) url("img/papier.jpg") center/cover fixed;color:var(--ink);font-family:var(--f-body);font-size:22px;line-height:1.2;
+  margin:0;overflow:hidden;color:var(--ink);font-family:var(--f);
+  background:var(--paper) url("img/papier.jpg") center/cover fixed;
+  display:grid;place-items:center;padding-block:0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:0;min-height:100vh;overflow-x:hidden;
 }
-body::before{
-  display:none;content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 .25  0 0 0 0 .3  0 0 0 0 .4  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
-}
-.wrapper{position:relative;z-index:1;max-width:1700px;margin:0 auto}
 button{font-family:inherit;cursor:pointer;color:inherit}
 button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .tab{font-variant-numeric:tabular-nums}
 
-/* ---------- Kopf: Begrüßung + Skyline ---------- */
-.head{position:relative;display:flex;align-items:center;margin-top:18px;min-height:clamp(250px,26vw,400px);padding:24px 32px;border-radius:var(--rad);border:3.5px solid var(--pencil);background:#cfe6fa url("img/skyline.jpg") center 78%/cover;box-shadow:5px 5px 0 rgba(27,39,68,.18)}
-.greet-text{position:relative;z-index:2;min-width:0;max-width:62%}
-.greet-text h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.6rem,6.4vw,6rem);line-height:1;color:var(--acc);text-wrap:balance;text-shadow:0 0 10px #fff,0 0 4px #fff,2px 2px 0 #fff}
-.greet-text .sub{font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.6rem);margin-top:8px;text-shadow:0 0 10px #fff,0 0 4px #fff,2px 2px 0 #fff}
-.baer{position:absolute;right:2%;bottom:-6px;height:106%;width:auto;mix-blend-mode:multiply;-webkit-mask-image:radial-gradient(closest-side,#000 78%,transparent);mask-image:radial-gradient(closest-side,#000 78%,transparent);pointer-events:none;z-index:1}
-.bubble{
-  position:absolute;z-index:3;right:calc(2% + clamp(230px,24vw,380px));top:14px;font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.6rem);
-  background:#fff;border:3.5px solid var(--pencil);border-radius:var(--rad-s);padding:4px 22px;transform:rotate(3deg);
-  box-shadow:4px 4px 0 rgba(27,39,68,.2);
+/* ---------- Bühne 16:9 ---------- */
+.stage{
+  position:relative;container-type:size;
+  width:min(calc(100vw - 32px),calc((100vh - 16px) * 16 / 9));
+  height:min(calc((100vw - 32px) * 9 / 16),calc(100vh - 16px));
+  font-size:1.12cqw;line-height:1.25;hyphens:auto;
+  display:grid;gap:1.1cqw;padding:1.2cqw;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
+  grid-template-rows:9.6cqw minmax(0,1fr) 15.2cqw 8cqw;
+  grid-template-areas:"head head head" "day now timer" "line line line" "spruch spruch spruch";
 }
-.bubble::after{content:"";position:absolute;left:26px;bottom:-14px;width:22px;height:22px;background:#fff;border-right:3.5px solid var(--pencil);border-bottom:3.5px solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
-
-/* ---------- Raster ---------- */
-.board{
-  display:grid;gap:26px;align-items:stretch;padding-block:26px 48px;
-  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);
-  grid-template-areas:"day now timer" "line line line" "spruch spruch spruch";
-}
-@media (max-width:1100px){
-  .board{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"day timer" "now now" "line line" "spruch spruch"}
-}
-@media (max-width:700px){
-  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"day" "now" "timer" "line" "spruch"}
-  .greet-text{max-width:100%}
-  .baer{height:62%;opacity:.9}.head{padding:18px}
-  .bubble{display:none}
-}
-.day{grid-area:day;--tone:var(--w4)}
-.now{grid-area:now;--tone:var(--w1)}
-.timer{grid-area:timer}
-.lineblk{grid-area:line;--tone:var(--w5)}
-.spruch{grid-area:spruch;--tone:var(--w2)}
+.head{grid-area:head}.day{grid-area:day}.now{grid-area:now}.timer{grid-area:timer}.lineblk{grid-area:line}.spruch{grid-area:spruch}
+.day{--tone:var(--w4)}.now{--tone:var(--w1)}.lineblk{--tone:var(--w5)}.spruch{--tone:var(--w2)}
 
 /* ---------- Karte: Buntstiftrahmen + Aquarellfläche ---------- */
-.panel{position:relative;isolation:isolate;padding:24px 30px;min-width:0;--fill:#fff}
+.panel{position:relative;isolation:isolate;padding:1.1cqw 1.5cqw;min-width:0;min-height:0;--fill:#fff}
 .panel::before{
-  content:"";position:absolute;inset:0;z-index:-2;border:3.5px solid var(--pencil);border-radius:var(--rad);
+  content:"";position:absolute;inset:0;z-index:-2;border:.2cqw solid var(--pencil);border-radius:var(--rad);
   background:var(--fill);filter:url(#rough);
 }
 .panel::after{
-  content:"";position:absolute;inset:8px;z-index:-1;pointer-events:none;opacity:.8;mix-blend-mode:multiply;
+  content:"";position:absolute;inset:.4cqw;z-index:-1;pointer-events:none;opacity:.75;mix-blend-mode:multiply;
   background:
     radial-gradient(60% 75% at 12% 18%,var(--tone) 0%,transparent 72%),
     radial-gradient(42% 55% at 94% 90%,var(--tone) 0%,transparent 70%);
   filter:url(#wash);
 }
-.tag{font-family:var(--f-display);font-size:1.6rem;color:var(--acc);display:block;margin-bottom:4px}
+.tag{font-weight:600;font-size:1.5cqw;color:var(--acc);display:block;margin-bottom:.3cqw}
+
+/* ---------- Kopf ---------- */
+.head{
+  position:relative;display:flex;align-items:center;padding:0 2cqw;border-radius:var(--rad);
+  border:.2cqw solid var(--pencil);background:#cfe6fa url("img/skyline.jpg") center 78%/cover;
+  box-shadow:.25cqw .25cqw 0 rgba(27,39,68,.18);
+}
+.greet-text{position:relative;z-index:2;min-width:0;max-width:62%;background:rgba(255,255,255,.84);padding:.5cqw 1.6cqw .6cqw;border-radius:var(--rad-s);border:.16cqw solid var(--pencil)}
+.greet-text h1{font-weight:700;font-size:3.4cqw;line-height:1.05;color:var(--acc);text-shadow:0 0 .5cqw #fff,0 0 .2cqw #fff,.1cqw .1cqw 0 #fff}
+.greet-text .sub{font-weight:500;font-size:1.6cqw;margin-top:.4cqw;text-shadow:0 0 .5cqw #fff,0 0 .2cqw #fff,.1cqw .1cqw 0 #fff}
+.baer{position:absolute;right:1.5%;bottom:-.3cqw;height:106%;width:auto;mix-blend-mode:multiply;-webkit-mask-image:radial-gradient(closest-side,#000 78%,transparent);mask-image:radial-gradient(closest-side,#000 78%,transparent);pointer-events:none;z-index:1}
+.bubble{
+  position:absolute;z-index:3;right:calc(1.5% + 12.5cqw);top:1.1cqw;font-weight:600;font-size:1.9cqw;background:#fff;
+  border:.2cqw solid var(--pencil);border-radius:var(--rad-s);padding:.2cqw 1.2cqw;transform:rotate(3deg);
+  box-shadow:.2cqw .2cqw 0 rgba(27,39,68,.2);
+}
+.bubble::after{content:"";position:absolute;left:1.4cqw;bottom:-.75cqw;width:1.1cqw;height:1.1cqw;background:#fff;border-right:.2cqw solid var(--pencil);border-bottom:.2cqw solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
 /* ---------- Tag + Datum ---------- */
-.wd{font-family:var(--f-display);font-size:clamp(3rem,6.2vw,6.4rem);line-height:1;color:var(--ink);overflow-wrap:anywhere}
-.date-de{font-family:var(--f-display);font-size:clamp(1.8rem,3.2vw,3rem);line-height:1.1;margin-top:8px}
-.sep{border:0;border-top:3px dashed var(--pencil);opacity:.4;margin:14px 0}
-.date-en{font-family:var(--f-display);font-size:clamp(1.7rem,3vw,2.8rem);line-height:1.1;color:#2559A8}
+.wd{font-weight:700;font-size:4cqw;line-height:1.05;overflow-wrap:break-word}
+.date-de{font-weight:500;font-size:2.2cqw;line-height:1.15;margin-top:.5cqw}
+.sep{border:0;border-top:.15cqw dashed var(--pencil);opacity:.4;margin:.8cqw 0}
+.date-en{font-weight:500;font-size:1.7cqw;line-height:1.2;color:var(--blue)}
 
 /* ---------- Jetzt + Gleich ---------- */
-.now-main{display:flex;align-items:center;gap:22px;min-height:150px}
+.now-main{display:flex;align-items:center;gap:1.2cqw}
 .bigchip{
-  width:clamp(90px,10vw,150px);height:clamp(90px,10vw,150px);border-radius:50% 46% 52% 48%;flex:none;display:grid;place-items:center;
-  font-size:0;background:var(--sc,#fff) center/cover no-repeat;border:4px solid var(--pencil);box-shadow:0 0 0 5px var(--sc,transparent);
+  width:7cqw;height:7cqw;border-radius:50% 46% 52% 48%;flex:none;font-size:0;
+  background:var(--sc,#fff) center/cover no-repeat;border:.22cqw solid var(--pencil);box-shadow:0 0 0 .26cqw var(--sc,transparent);
 }
-.now-name{font-family:var(--f-display);font-size:clamp(2.6rem,5.6vw,5.4rem);line-height:1;overflow-wrap:anywhere}
-.now-time{font-size:clamp(1.3rem,2vw,1.9rem);margin-top:6px}
-.now-left{font-family:var(--f-display);color:var(--acc);font-size:clamp(1.4rem,2.2vw,2.1rem)}
+.now-name{font-weight:700;font-size:3cqw;line-height:1.05}
+.now-time{font-weight:400;font-size:1.5cqw;margin-top:.3cqw}
+.now-left{font-weight:600;color:var(--acc);font-size:1.5cqw;margin-top:.1cqw}
 .next{
-  margin-top:18px;padding-top:16px;border-top:3px dashed var(--pencil);display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-  font-family:var(--f-display);font-size:clamp(1.5rem,2.4vw,2.2rem);
+  margin-top:.9cqw;padding-top:.8cqw;border-top:.15cqw dashed var(--pencil);display:flex;align-items:center;gap:.9cqw;flex-wrap:wrap;
+  font-weight:600;font-size:1.8cqw;
 }
 .next .chip{
-  width:56px;height:56px;border-radius:50% 46% 52% 48%;display:grid;place-items:center;font-size:0;
-  background:var(--sc,#fff) var(--img) center/cover no-repeat;border:3px solid var(--pencil);box-shadow:0 0 0 3px var(--sc,transparent);flex:none;
+  width:3.6cqw;height:3.6cqw;border-radius:50% 46% 52% 48%;flex:none;font-size:0;
+  background:var(--sc,#fff) var(--img) center/cover no-repeat;border:.16cqw solid var(--pencil);box-shadow:0 0 0 .16cqw var(--sc,transparent);
 }
-.next small{font-family:var(--f-body);font-size:1.2rem;opacity:.85}
+.next small{font-weight:400;font-size:1.3cqw;opacity:.85}
 
 /* ---------- Abfahrtstafel-Timer ---------- */
-.timer{--fill:var(--board);--tone:var(--w1)}
-.timer::after{opacity:.35}
-.timer .tag{color:var(--ink);font-size:clamp(1.9rem,3vw,2.8rem)}
-.clock{
-  font-family:var(--f-display);line-height:1;font-size:clamp(5rem,9vw,9.5rem);display:flex;align-items:center;flex-wrap:wrap;
-  color:var(--ink);margin:2px 0 10px;
-}
-.clock #cMin,.clock #cSec{display:inline-block;min-width:1.25em;text-align:center}
-.clock .colon{opacity:.6;padding-bottom:.1em}
+.timer{--fill:var(--board);--tone:var(--w1);display:flex;flex-direction:column;justify-content:space-between}
+.timer::after{opacity:.3}
+.timer .tag{color:var(--ink);font-size:1.8cqw;margin-bottom:0}
+.clock{font-weight:700;line-height:1;font-size:5.2cqw;display:flex;align-items:center;color:var(--ink)}
+.clock #cMin,.clock #cSec{display:inline-block;min-width:1.3em;text-align:center}
+.clock .colon{opacity:.6;padding-bottom:.08em}
 .clock.warn{color:var(--acc)}
 .clock.done{animation:blink .6s steps(2) infinite;color:var(--acc)}
 @keyframes blink{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.clock.done{animation:none}}
-.bar{height:22px;border:3.5px solid var(--pencil);border-radius:var(--rad-s);background:#fff;overflow:hidden;margin-bottom:16px}
-.bar i{display:block;height:100%;width:100%;background:var(--line);transition:width .4s linear;border-right:3px solid var(--pencil)}
-/* Bedienung für die Lehrkraft: klein und leise */
-.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar{height:1.1cqw;border:.18cqw solid var(--pencil);border-radius:var(--rad-s);background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--line);transition:width .4s linear;border-right:.15cqw solid var(--pencil)}
+.ctl{display:flex;flex-wrap:wrap;gap:.5cqw;align-items:center}
 .btn{
-  appearance:none;border:3px solid var(--pencil);border-radius:var(--rad-s);background:#fff;font-family:var(--f-display);
-  font-size:1.25rem;padding:4px 16px;min-height:46px;min-width:46px;box-shadow:3px 3px 0 rgba(27,39,68,.25);
+  appearance:none;border:.16cqw solid var(--pencil);border-radius:var(--rad-s);background:#fff;font-weight:600;
+  font-size:1.25cqw;padding:.1cqw .9cqw;min-height:2.6cqw;min-width:2.6cqw;box-shadow:.15cqw .15cqw 0 rgba(27,39,68,.25);
 }
-.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn:active{transform:translate(.15cqw,.15cqw);box-shadow:none}
 .btn:disabled{opacity:.4;cursor:default}
-.btn.go{background:var(--acc);color:#fff;font-size:1.7rem;padding:4px 30px}
-.ctl.minor{margin-top:10px;opacity:.85}
-.ctl.minor .btn{font-size:1.05rem;min-height:40px;padding:2px 12px}
+.btn.go{background:var(--acc);color:#fff;font-size:1.7cqw;padding:.1cqw 2.2cqw;min-height:3.1cqw}
 
 /* ---------- Die Linie ---------- */
-.lineblk{padding-block:20px 26px}
-.line-head{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
-.sign{
-  font-family:var(--f-display);font-size:1.8rem;background:var(--line);color:#fff;border:3.5px solid var(--pencil);
-  border-radius:12px;padding:0 16px;transform:rotate(-2deg);line-height:1.5;
+.lineblk{display:grid;grid-template-rows:auto 1fr;padding-block:.9cqw .8cqw}
+.line-head{display:flex;align-items:center;gap:.8cqw}
+.sign{font-weight:700;font-size:1.6cqw;background:var(--line);color:#fff;border:.18cqw solid var(--pencil);border-radius:.6cqw;padding:0 .8cqw;transform:rotate(-2deg);line-height:1.5}
+.line-head .tag{margin:0;font-size:1.8cqw}
+.klasse{margin-left:auto;font-size:1.3cqw;opacity:.85}
+.line{--cy:5.4cqw;display:flex;align-items:flex-start}
+.stop{
+  --sz:4.2cqw;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
+  padding:calc(var(--cy) - var(--sz) / 2) .2cqw 0;
 }
-.line-head .tag{margin:0}
-.klasse{margin-left:auto;font-size:1.15rem;opacity:.85}
-.line{display:flex;align-items:flex-start;padding-top:6px}
-.stop{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;padding:66px 4px 0}
+.stop.brk{flex:.6 1 0;--sz:1.8cqw}
+.stop.now{--sz:4.4cqw}
+.stop.now.brk{--sz:2.6cqw}
 .stop::before{
-  content:"";position:absolute;left:0;right:0;top:calc(66px + var(--sz)/2 - 8px);height:16px;background:var(--line);border-block:3px solid var(--pencil);
+  content:"";position:absolute;left:0;right:0;top:calc(var(--cy) - .4cqw);height:.8cqw;background:var(--line);border-block:.15cqw solid var(--pencil);
 }
 .stop:first-child::before{left:50%}
 .stop:last-child::before{right:50%}
 .stop.up::before{background:#fff}
 .dot{
-  --sz:66px;position:relative;z-index:1;width:var(--sz);height:var(--sz);border-radius:50%;display:grid;place-items:center;
-  font-size:0;background:var(--sc,#fff) var(--img) center/cover no-repeat;border:4px solid var(--pencil);box-shadow:0 0 0 4px var(--sc,transparent);
+  position:relative;z-index:1;width:var(--sz);height:var(--sz);border-radius:50%;font-size:0;
+  background:var(--sc,#fff) var(--img) center/cover no-repeat;border:.2cqw solid var(--pencil);box-shadow:0 0 0 .2cqw var(--sc,transparent);
 }
-.stop{--sz:66px}
-.stop.brk{--sz:30px}
-.stop.brk .dot{--sz:30px;background:#fff;border-width:4px}
-.stop .nm{font-family:var(--f-display);font-size:clamp(1.15rem,1.55vw,1.7rem);line-height:1.05;margin-top:10px;overflow-wrap:anywhere}
-.stop .tm{font-size:clamp(1rem,1.2vw,1.3rem);opacity:.85}
-.stop.brk .nm{font-size:clamp(1rem,1.25vw,1.4rem);color:#2559A8}
-.stop.past .dot{opacity:.5}
-.stop.past .nm,.stop.past .tm{opacity:.5}
-.stop.now{--sz:84px}
-.stop.now .dot{--sz:84px;box-shadow:0 0 0 7px var(--w1),0 0 0 11px var(--pencil);font-size:2.4rem}
-.stop.now.brk{--sz:44px}
-.stop.now.brk .dot{--sz:44px}
-.stop.now{padding-top:76px}
-.stop.now::before{top:calc(76px + var(--sz)/2 - 8px)}
+.stop.brk .dot{background:#fff;box-shadow:none}
+.stop.now .dot{box-shadow:0 0 0 .35cqw var(--w1),0 0 0 .55cqw var(--pencil)}
+.stop .nm{font-weight:600;font-size:1.3cqw;line-height:1.1;margin-top:.55cqw;max-width:100%}
+.stop .tm{font-weight:400;font-size:1.2cqw;opacity:.85}
+.stop.brk .nm{color:var(--blue);font-size:1.15cqw}
+.stop.past .dot,.stop.past .nm,.stop.past .tm{opacity:.5}
 .here{
-  position:absolute;top:0;left:50%;translate:-50% 0;font-family:var(--f-display);font-size:1.25rem;white-space:nowrap;z-index:2;
-  background:#fff;color:var(--acc);border:3px solid var(--pencil);border-radius:var(--rad-s);padding:0 14px 0 8px;display:flex;align-items:center;
+  position:absolute;top:0;left:50%;translate:-50% 0;font-weight:600;font-size:1.2cqw;white-space:nowrap;z-index:2;
+  background:#fff;color:var(--acc);border:.18cqw solid var(--pencil);border-radius:var(--rad-s);padding:0 .8cqw 0 .4cqw;display:flex;align-items:center;
 }
-.zug{height:46px;width:auto;mix-blend-mode:multiply;margin-right:6px}
-.here::after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;width:14px;height:14px;background:#fff;border-right:3px solid var(--pencil);border-bottom:3px solid var(--pencil);transform:rotate(45deg)}
-.ok{position:absolute;right:-6px;top:-6px;width:26px;height:26px;border-radius:50%;background:var(--w3);border:3px solid var(--pencil);display:none;place-items:center}
+.zug{height:1.8cqw;width:auto;mix-blend-mode:multiply;margin-right:.3cqw}
+.here::after{content:"";position:absolute;left:50%;bottom:-.5cqw;margin-left:-.4cqw;width:.7cqw;height:.7cqw;background:#fff;border-right:.18cqw solid var(--pencil);border-bottom:.18cqw solid var(--pencil);transform:rotate(45deg)}
+.ok{position:absolute;right:-.3cqw;top:-.3cqw;width:1.3cqw;height:1.3cqw;border-radius:50%;background:var(--w3);border:.16cqw solid var(--pencil);display:none;place-items:center}
+.ok svg{width:70%;height:70%}
 .stop.past:not(.brk) .ok{display:grid}
-@media (max-width:860px){
-  .line{flex-direction:column;gap:0;padding-left:6px}
-  .stop,.stop.now{flex-direction:row;align-items:center;gap:16px;text-align:left;padding:8px 0}
-  .stop::before,.stop.now::before{left:calc(var(--maxw,84px)/2 - 8px);right:auto;top:0;bottom:0;width:16px;height:auto;border-block:0;border-inline:3px solid var(--pencil)}
-  .stop:first-child::before{top:50%}
-  .stop:last-child::before{bottom:50%}
-  .dotwrap{width:84px;display:grid;place-items:center;flex:none}
-  .stop .nm{margin-top:0}
-  .here{position:static;translate:none;margin-right:6px}.zug{height:34px}
-  .here::after{display:none}
-}
 
 /* ---------- Mutmachspruch ---------- */
-.spruch{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
-.spruch .tag{margin:0}
-.spruch-text{font-family:var(--f-display);font-size:clamp(2.2rem,4.6vw,4.4rem);line-height:1.1;text-wrap:balance;flex:1 1 420px;min-width:0}
-.spruch .btn{font-size:1.1rem}
+.spruch{display:flex;align-items:center;gap:1.6cqw}
+.spruch .tag{margin:0;flex:none;max-width:12cqw}
+.spruch-text{font-weight:600;font-size:2.5cqw;line-height:1.2;text-wrap:balance;flex:1 1 auto;min-width:0}
+.spruch .btn{flex:none}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -208,7 +181,8 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   </defs>
 </svg>
 
-<div class="wrapper">
+<div class="stage" id="stage">
+
   <header class="head">
     <div class="greet-text">
       <h1 id="gruss">Guten Morgen, 4b!</h1>
@@ -218,68 +192,65 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     <img class="baer" src="img/baer.jpg" alt="" width="560" height="560">
   </header>
 
-  <main class="board">
+  <section class="panel day" aria-label="Datum">
+    <span class="tag">Heute ist</span>
+    <div class="wd" id="wd">Dienstag</div>
+    <div class="date-de tab" id="dateDe">24. November 2026</div>
+    <hr class="sep">
+    <div class="date-en" id="dateEn">Tuesday, November 24th</div>
+  </section>
 
-    <section class="panel day" aria-label="Datum">
-      <span class="tag">Heute ist</span>
-      <div class="wd" id="wd">Dienstag</div>
-      <div class="date-de tab" id="dateDe">24. November 2026</div>
-      <hr class="sep">
-      <div class="date-en" id="dateEn">Tuesday, November 24th</div>
-    </section>
-
-    <section class="panel now" aria-label="Jetzt und gleich">
-      <span class="tag" id="nowTag">Jetzt</span>
-      <div class="now-main">
-        <div class="bigchip" id="nowChip">Ma</div>
-        <div>
-          <div class="now-name" id="nowName">Mathe</div>
-          <div class="now-time tab" id="nowTime">08:00 – 08:45 Uhr</div>
-          <div class="now-left tab" id="nowLeft"></div>
-        </div>
+  <section class="panel now" aria-label="Jetzt und gleich">
+    <span class="tag" id="nowTag">Jetzt</span>
+    <div class="now-main">
+      <div class="bigchip" id="nowChip">Ma</div>
+      <div>
+        <div class="now-name" id="nowName">Mathe</div>
+        <div class="now-time tab" id="nowTime">08:00 – 08:45 Uhr</div>
+        <div class="now-left tab" id="nowLeft"></div>
       </div>
-      <div class="next" id="next"></div>
-    </section>
+    </div>
+    <div class="next" id="next"></div>
+  </section>
 
-    <section class="panel timer" aria-label="Timer">
-      <h2 class="tag">Wir starten in:</h2>
-      <div class="clock" id="clock" role="timer" aria-live="off"><span id="cMin">05</span><span class="colon">:</span><span id="cSec">00</span></div>
-      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
-      <div class="ctl">
-        <button class="btn go" id="tGo" type="button">Start</button>
-        <button class="btn" id="tReset" type="button">Zurück</button>
-      </div>
-      <div class="ctl minor" id="tSet">
-        <button class="btn" id="tMinus" type="button" aria-label="Eine Minute weniger">−1</button>
-        <button class="btn" id="tPlus" type="button" aria-label="Eine Minute mehr">+1</button>
-        <button class="btn preset" data-min="1" type="button">1</button>
-        <button class="btn preset" data-min="5" type="button">5</button>
-        <button class="btn preset" data-min="10" type="button">10</button>
-        <button class="btn" id="tTest" type="button" title="Alarmton anhören">Ton testen</button>
-      </div>
-    </section>
+  <section class="panel timer" aria-label="Timer">
+    <h2 class="tag">Wir starten in:</h2>
+    <div class="clock" id="clock" role="timer" aria-live="off"><span id="cMin">05</span><span class="colon">:</span><span id="cSec">00</span></div>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="ctl">
+      <button class="btn go" id="tGo" type="button">Start</button>
+      <button class="btn" id="tReset" type="button">Zurück</button>
+    </div>
+    <div class="ctl" id="tSet">
+      <button class="btn" id="tMinus" type="button" aria-label="Eine Minute weniger">−1</button>
+      <button class="btn" id="tPlus" type="button" aria-label="Eine Minute mehr">+1</button>
+      <button class="btn preset" data-min="5" type="button">5</button>
+      <button class="btn preset" data-min="10" type="button">10</button>
+      <button class="btn" id="tTest" type="button" title="Alarmton anhören">Ton testen</button>
+    </div>
+  </section>
 
-    <section class="panel lineblk" aria-label="Tagesablauf">
-      <div class="line-head">
-        <span class="sign">4b</span>
-        <h2 class="tag">Unser Tag</h2>
-        <span class="klasse" id="planInfo">Dienstag</span>
-      </div>
-      <div class="line" id="line"></div>
-    </section>
+  <section class="panel lineblk" aria-label="Tagesablauf">
+    <div class="line-head">
+      <span class="sign">4b</span>
+      <h2 class="tag">Unser Tag</h2>
+      <span class="klasse" id="planInfo">Dienstag</span>
+    </div>
+    <div class="line" id="line"></div>
+  </section>
 
-    <section class="panel spruch" aria-label="Mutmachspruch">
-      <h2 class="tag">Mutmachspruch</h2>
-      <p class="spruch-text" id="spruch">Du schaffst das – Schritt für Schritt!</p>
-      <button class="btn" id="spruchNeu" type="button">Neuer Spruch</button>
-    </section>
+  <section class="panel spruch" aria-label="Mutmachspruch">
+    <h2 class="tag">Mutmach&shy;spruch</h2>
+    <p class="spruch-text" id="spruch">Du schaffst das – Schritt für Schritt!</p>
+    <button class="btn" id="spruchNeu" type="button">Neuer Spruch</button>
+  </section>
 
-  </main>
 </div>
 
 <script>
 (function(){
   "use strict";
+  document.documentElement.lang='de';
   function pad(n){return n<10?'0'+n:''+n;}
   function $(id){return document.getElementById(id);}
   var TAGE=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -323,9 +294,11 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   /* ---------- Stundenplan als Linie ---------- */
   var SUBJ={
-    'Deutsch':{abbr:'De',c:'#F28B82',img:'img/fach-deutsch.jpg'},'Mathe':{abbr:'Ma',c:'#8AB4F0',img:'img/fach-mathe.jpg'},'Sachunterricht':{abbr:'Su',c:'#8FD1A0',img:'img/fach-sachunterricht.jpg'},
-    'Musik':{abbr:'Mu',c:'#F7D774',img:'img/fach-musik.jpg'},'Kunst':{abbr:'Ku',c:'#C7A6EC',img:'img/fach-kunst.jpg'},'Lebenskunde':{abbr:'Lk',c:'#C3CAD6',img:'img/fach-lebenskunde.jpg'},
-    'Sport':{abbr:'Sp',c:'#A9B4CC',img:'img/fach-sport.jpg'},'Englisch':{abbr:'En',c:'#F6B98D',img:'img/fach-englisch.jpg'},'Klassenrat':{abbr:'KR',c:'#7CC9A0',img:'img/fach-klassenrat.jpg'}
+    'Deutsch':{abbr:'De',c:'#F28B82',img:'img/fach-deutsch.jpg'},'Mathe':{abbr:'Ma',c:'#8AB4F0',img:'img/fach-mathe.jpg'},
+    'Sachunterricht':{abbr:'Su',c:'#8FD1A0',img:'img/fach-sachunterricht.jpg'},'Musik':{abbr:'Mu',c:'#F7D774',img:'img/fach-musik.jpg'},
+    'Kunst':{abbr:'Ku',c:'#C7A6EC',img:'img/fach-kunst.jpg'},'Lebenskunde':{abbr:'Lk',c:'#C3CAD6',img:'img/fach-lebenskunde.jpg'},
+    'Sport':{abbr:'Sp',c:'#A9B4CC',img:'img/fach-sport.jpg'},'Englisch':{abbr:'En',c:'#F6B98D',img:'img/fach-englisch.jpg'},
+    'Klassenrat':{abbr:'KR',c:'#7CC9A0',img:'img/fach-klassenrat.jpg'}
   };
   var T=[['08:00','08:45'],['09:00','09:45'],['10:10','10:55'],['11:05','11:50'],['12:30','13:15'],['13:25','14:10']];
   var P1='1. Hofpause',P2='Essen / 2. Hofpause';
@@ -338,18 +311,17 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     5:[Ls(0,'Deutsch'),Ls(1,'Sachunterricht'),P1,Ls(2,'Sport'),Ls(3,'Mathe'),P2,Ls(4,'Klassenrat')]
   };
   function mins(hhmm){var p=hhmm.split(':');return +p[0]*60+ +p[1];}
-  /* Pausen bekommen Zeiten aus ihren Nachbarn */
   function timeline(day){
     var src=PLAN[day],out=[],i;
     for(i=0;i<src.length;i++){
       var it=src[i];
-      if(typeof it==='string'){
-        out.push({k:'b',name:it,s:src[i-1].e,e:src[i+1].s});
-      }else{out.push(it);}
+      if(typeof it==='string'){out.push({k:'b',name:it,s:src[i-1].e,e:src[i+1].s});}
+      else{out.push(it);}
     }
     return out;
   }
-  var CHECK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B2744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 6.5"/></svg>';
+  var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#1B2744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 6.5"/></svg>';
+  var HERE='<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>';
   var lastKey='';
   function render(now){
     var day=now.getDay(),weekend=false;
@@ -361,7 +333,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     }
     var before=!weekend&&cur<0&&nowM<mins(tl[0].s);
     var after=!weekend&&cur<0&&nowM>=mins(tl[tl.length-1].e);
-    /* Linie */
     var key=day+'|'+weekend+'|'+cur+'|'+before+'|'+after,html='';
     if(key!==lastKey){
       lastKey=key;
@@ -369,17 +340,16 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
         var it=tl[i];
         var st=weekend?'up':(cur===i?'now':((cur>i||after||(cur<0&&!before&&nowM>=mins(it.e)))?'past':'up'));
         if(it.k==='b'){
-          html+='<div class="stop brk '+st+'">'+(st==='now'?'<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>':'')+'<span class="dotwrap"><span class="dot"></span></span><span class="lbl"><span class="nm">'+it.name+'</span></span></div>';
+          html+='<div class="stop brk '+st+'">'+(st==='now'?HERE:'')+'<span class="dot"></span><span class="nm">'+it.name+'</span></div>';
         }else{
           var sj=SUBJ[it.f];
-          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?'<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>':'')+'<span class="dotwrap"><span class="dot">'+sj.abbr+'<span class="ok">'+CHECK+'</span></span></span><span class="lbl"><span class="nm">'+it.f+'</span><br><span class="tm tab">'+it.s+'</span></span></div>';
+          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?HERE:'')+'<span class="dot">'+sj.abbr+'<span class="ok">'+CHECK+'</span></span><span class="nm">'+it.f+'</span><span class="tm tab">'+it.s+'</span></div>';
         }
       }
       $('line').innerHTML=html;
     }
     $('planInfo').textContent=weekend?'Vorschau Montag':TAGE[now.getDay()];
 
-    /* Jetzt + Gleich */
     var chip=$('nowChip'),nm=$('nowName'),tm=$('nowTime'),lf=$('nowLeft'),tag=$('nowTag');
     var nextLesson=null,startAt=cur+1;
     if(cur<0&&before){startAt=0;}
