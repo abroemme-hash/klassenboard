@@ -109,7 +109,9 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .timer::after{opacity:.3}
 .timer .tag{color:var(--ink);font-size:1.8cqw;margin-bottom:0}
 .clock{font-weight:700;line-height:1;font-size:5.2cqw;display:flex;align-items:center;color:var(--ink)}
-.clock #cMin,.clock #cSec{display:inline-block;min-width:1.3em;text-align:center}
+.clock input{font:inherit;color:inherit;font-variant-numeric:tabular-nums;width:1.55em;text-align:center;padding:0;margin:0;background:rgba(255,255,255,.55);border:.16cqw dashed var(--pencil);border-radius:.8cqw;line-height:1}
+.clock input:focus{outline:.25cqw solid var(--w4);background:#fff;border-style:solid}
+.clock input:read-only{background:transparent;border-color:transparent;outline:none}
 .clock .colon{opacity:.6;padding-bottom:.08em}
 .clock.warn{color:var(--acc)}
 .clock.done{animation:blink .6s steps(2) infinite;color:var(--acc)}
@@ -256,7 +258,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   <section class="panel timer" aria-label="Timer">
     <h2 class="tag">Wir starten in:</h2>
-    <div class="clock" id="clock" role="timer" aria-live="off"><span id="cMin">05</span><span class="colon">:</span><span id="cSec">00</span></div>
+    <div class="clock" id="clock" role="timer" aria-live="off"><input id="cMin" type="text" inputmode="numeric" maxlength="2" value="05" aria-label="Minuten" autocomplete="off" title="Minuten eintippen"><span class="colon">:</span><input id="cSec" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="Sekunden" autocomplete="off" title="Sekunden eintippen"></div>
     <div class="bar" aria-hidden="true"><i id="bar"></i></div>
     <div class="ctl">
       <button class="btn go" id="tGo" type="button">Start</button>
@@ -436,31 +438,46 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   var clock=$('clock'),cMin=$('cMin'),cSec=$('cSec'),bar=$('bar'),goBtn=$('tGo'),setRow=$('tSet');
   function showTimer(){
     var s=Math.max(0,Math.ceil(remain));
-    cMin.textContent=pad(Math.floor(s/60));cSec.textContent=pad(s%60);
+    cMin.value=pad(Math.floor(s/60));cSec.value=pad(s%60);
     bar.style.width=(setSec>0?Math.max(0,remain/setSec)*100:0)+'%';
     clock.classList.toggle('warn',running&&s<=10&&s>0);
   }
-  function enableSet(on){var b=setRow.querySelectorAll('button:not(#tTest)');for(var i=0;i<b.length;i++)b[i].disabled=!on;}
+  function enableSet(on){var b=setRow.querySelectorAll('button:not(#tTest)');for(var i=0;i<b.length;i++)b[i].disabled=!on;cMin.readOnly=cSec.readOnly=!on;}
   function audio(){
     if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}
     if(ctx.state==='suspended')ctx.resume();
     return ctx;
   }
-  function beep(c,t,f,d,g,type){
+  var master=null;
+  function stopAlarm(){if(master){try{master.disconnect();}catch(e){}master=null;}}
+  function tone(c,type,t,d,f0,f1,g){
     var o=c.createOscillator(),a=c.createGain();
-    o.type=type;o.frequency.value=f;
+    o.type=type;o.frequency.setValueAtTime(f0,t);
+    if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);
     a.gain.setValueAtTime(0.0001,t);a.gain.exponentialRampToValueAtTime(g,t+0.01);
-    a.gain.setValueAtTime(g,t+d-0.04);a.gain.exponentialRampToValueAtTime(0.0001,t+d);
-    o.connect(a);a.connect(c.destination);o.start(t);o.stop(t+d+0.02);
+    a.gain.setValueAtTime(g,t+Math.max(0.02,d-0.04));a.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(a);a.connect(master);o.start(t);o.stop(t+d+0.02);
+    return o;
   }
-  /* Schulglocken-Alarm: sechsmal Doppelton, volle Lautstärke, ca. 4 Sekunden */
+  /* Chaos-Wecker: Sirene, Boings, Quietscheente, schiefe Hupe (ca. 5 Sekunden). "Zurück" stoppt ihn. */
   function alarm(){
     var c=audio();if(!c)return;
-    var t=c.currentTime+0.05;
-    for(var i=0;i<6;i++){
-      beep(c,t+i*0.65,988,0.28,0.9,'square');
-      beep(c,t+i*0.65+0.3,784,0.28,0.9,'square');
-      beep(c,t+i*0.65,1976,0.28,0.25,'sine');
+    stopAlarm();
+    var comp=c.createDynamicsCompressor();comp.threshold.value=-10;comp.ratio.value=12;
+    master=c.createGain();master.connect(comp);comp.connect(c.destination);
+    var t=c.currentTime+0.05,i;
+    for(i=0;i<3;i++){tone(c,'sawtooth',t+i*0.5,0.25,500,1600,0.55);tone(c,'sawtooth',t+i*0.5+0.25,0.25,1600,500,0.55);}
+    t+=1.6;
+    for(i=0;i<3;i++){
+      var s=t+i*0.42,o=tone(c,'triangle',s,0.4,760,120,0.9),lfo=c.createOscillator(),lg=c.createGain();
+      lfo.frequency.value=26;lg.gain.value=95;lfo.connect(lg);lg.connect(o.frequency);lfo.start(s);lfo.stop(s+0.42);
+    }
+    t+=1.35;
+    for(i=0;i<4;i++){tone(c,'square',t+i*0.22,0.09,1300,2500,0.45);tone(c,'square',t+i*0.22+0.09,0.09,2500,1100,0.45);}
+    t+=1.0;
+    for(i=0;i<3;i++){
+      var h=t+i*0.26,d=i===2?0.9:0.18;
+      tone(c,'square',h,d,311,0,0.45);tone(c,'square',h,d,330,0,0.45);tone(c,'sawtooth',h,d,622,0,0.3);
     }
   }
   function finish(){
@@ -475,7 +492,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   }
   function resetClock(){clock.classList.remove('done','warn');goBtn.dataset.state='';}
   goBtn.addEventListener('click',function(){
-    audio();
+    audio();stopAlarm();
     if(goBtn.dataset.state==='done'){remain=setSec;resetClock();showTimer();}
     if(running){clearInterval(iv);iv=null;running=false;goBtn.textContent='Weiter';enableSet(false);showTimer();return;}
     if(remain<=0)return;
@@ -483,15 +500,32 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     iv=setInterval(tick,200);tick();
   });
   $('tReset').addEventListener('click',function(){
-    clearInterval(iv);iv=null;running=false;remain=setSec;resetClock();goBtn.textContent='Start';enableSet(true);showTimer();
+    stopAlarm();clearInterval(iv);iv=null;running=false;remain=setSec;resetClock();goBtn.textContent='Start';enableSet(true);showTimer();
   });
   $('tTest').addEventListener('click',alarm);
-  function setMin(m){
+  function setSeconds(sec){
     if(running)return;
-    m=Math.max(1,Math.min(99,m));setSec=m*60;remain=setSec;resetClock();goBtn.textContent='Start';showTimer();
+    sec=Math.max(0,Math.min(99*60+59,sec));setSec=sec;remain=sec;resetClock();goBtn.textContent='Start';showTimer();
   }
-  $('tPlus').addEventListener('click',function(){setMin(Math.round(setSec/60)+1);});
-  $('tMinus').addEventListener('click',function(){setMin(Math.round(setSec/60)-1);});
+  function setMin(m){setSeconds(m*60);}
+  $('tPlus').addEventListener('click',function(){setSeconds(setSec+60);});
+  $('tMinus').addEventListener('click',function(){setSeconds(Math.max(1,setSec-60));});
+  /* Minuten und Sekunden direkt eintippen */
+  function readInputs(){
+    var m=parseInt(cMin.value,10)||0,s=parseInt(cSec.value,10)||0;
+    setSec=Math.min(99*60+59,m*60+s);remain=setSec;resetClock();goBtn.textContent='Start';
+    bar.style.width=(setSec>0?100:0)+'%';
+  }
+  [cMin,cSec].forEach(function(el){
+    el.addEventListener('focus',function(){if(!el.readOnly)el.select();});
+    el.addEventListener('click',function(){if(!el.readOnly)el.select();});
+    el.addEventListener('input',function(){
+      if(el.readOnly)return;
+      el.value=el.value.replace(/\D/g,'').slice(0,2);readInputs();
+    });
+    el.addEventListener('blur',function(){if(!el.readOnly&&!running)showTimer();});
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();el.blur();goBtn.click();}});
+  });
   var pre=document.querySelectorAll('.preset');
   for(var i=0;i<pre.length;i++){pre[i].addEventListener('click',function(){setMin(+this.getAttribute('data-min'));});}
   showTimer();
