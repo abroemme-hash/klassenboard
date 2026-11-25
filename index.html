@@ -1,4 +1,4 @@
-<title>Klassenboard U-Bahn</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Klassenboard U-Bahn</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Idee: Der Tag ist eine U-Bahn-Linie. Jede Stunde ist eine Haltestelle, "Du bist hier" zeigt die aktuelle.
@@ -15,6 +15,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 h1,h2,p{margin:0}
 html,body{height:100%}
 body{
@@ -34,9 +35,9 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   height:min(calc((100vw - 32px) * 9 / 16),calc(100vh - 16px));
   font-size:1.12cqw;line-height:1.25;hyphens:auto;
   display:grid;gap:1.1cqw;padding:1.2cqw;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
   grid-template-rows:8.2cqw minmax(0,1fr) 16.6cqw 7cqw auto;
-  grid-template-areas:"head head" "timer day" "line line" "spruch spruch" "links links";
+  grid-template-areas:"head head head" "timer hw day" "line line line" "spruch spruch spruch" "links links links";
 }
 .links{grid-area:links;text-align:center;font-size:8pt;line-height:1.3;color:var(--ink)}
 .links a{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
@@ -78,10 +79,10 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .bubble::after{content:"";position:absolute;left:1.4cqw;bottom:-.75cqw;width:1.1cqw;height:1.1cqw;background:#fff;border-right:.2cqw solid var(--pencil);border-bottom:.2cqw solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
 /* ---------- Tag + Datum ---------- */
-.date-de{font-weight:700;font-size:4.2cqw;line-height:1.1;margin-top:.2cqw}
-.wd{font-weight:600;font-size:2.4cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
+.date-de{font-weight:700;font-size:3.5cqw;line-height:1.1;margin-top:.2cqw}
+.wd{font-weight:600;font-size:2.1cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
 .sep{border:0;border-top:.15cqw dashed var(--pencil);opacity:.4;margin:.8cqw 0}
-.date-en{font-weight:500;font-size:2.2cqw;line-height:1.2;color:var(--blue)}
+.date-en{font-weight:500;font-size:1.9cqw;line-height:1.2;color:var(--blue)}
 .ord{color:var(--acc);font-weight:700}
 
 /* ---------- Jetzt + Gleich ---------- */
@@ -107,7 +108,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .timer{--fill:var(--board);--tone:var(--w1);display:flex;flex-direction:column;justify-content:space-between}
 .timer::after{opacity:.3}
 .timer .tag{color:var(--ink);font-size:1.8cqw;margin-bottom:0}
-.clock{font-weight:700;line-height:1;font-size:6.2cqw;display:flex;align-items:center;color:var(--ink)}
+.clock{font-weight:700;line-height:1;font-size:5.2cqw;display:flex;align-items:center;color:var(--ink)}
 .clock #cMin,.clock #cSec{display:inline-block;min-width:1.3em;text-align:center}
 .clock .colon{opacity:.6;padding-bottom:.08em}
 .clock.warn{color:var(--acc)}
@@ -127,8 +128,49 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .timer .btn{font-size:1cqw;min-height:2.1cqw;min-width:2.1cqw;padding:.05cqw .7cqw;border-width:.14cqw;box-shadow:.1cqw .1cqw 0 rgba(27,39,68,.25)}
 .timer .btn.go{font-size:1.3cqw;min-height:2.5cqw;padding:.05cqw 1.7cqw}
 
-/* ---------- Die Linie ---------- */
-.lineblk{display:grid;grid-template-rows:auto 1fr;padding-block:.9cqw .8cqw}
+/* ---------- Hausaufgaben ---------- */
+.hw{grid-area:hw;--tone:var(--w3);display:flex;flex-direction:column}
+.hw-head{display:flex;justify-content:space-between;align-items:center;gap:1cqw;margin-bottom:.5cqw}
+.hw-head .tag{margin:0;font-size:1.8cqw}
+.btn.sm{font-size:1cqw;min-height:2.1cqw;min-width:2.1cqw;padding:.05cqw .8cqw;border-width:.14cqw;box-shadow:.1cqw .1cqw 0 rgba(27,39,68,.25)}
+.hw-list{list-style:none;margin:0;padding:0;display:grid;align-content:start;gap:.5cqw;flex:1;min-height:0;overflow:hidden}
+.hw-item{display:flex;align-items:center;gap:.8cqw;min-width:0}
+.hw-img{width:2.4cqw;height:2.4cqw;border-radius:.5cqw;flex:none;background:var(--sc,#fff) var(--img) center/100% 100% no-repeat;border:.14cqw solid var(--pencil);box-shadow:0 0 0 .14cqw var(--sc,transparent)}
+.hw-t{min-width:0;display:block}
+.hw-task{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;font-weight:500;font-size:1.15cqw;line-height:1.15;overflow-wrap:anywhere}
+.hw-fach{font-weight:700}
+.hw-due{display:block;font-size:.95cqw;color:#5B6580;line-height:1.2}
+.hw-item.today .hw-img{width:3.4cqw;height:3.4cqw;border-width:.18cqw}
+.hw-item.today .hw-task{color:var(--acc);font-weight:700;font-size:1.65cqw}
+.hw-item.today .hw-due{color:var(--acc);font-weight:700;font-size:1.05cqw;text-transform:uppercase;letter-spacing:.04em}
+.hw-empty{font-weight:600;font-size:1.6cqw;color:#5B6580}
+.hw-more{font-weight:600;font-size:1cqw;color:#5B6580}
+
+/* ---------- Eingabefenster ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(27,39,68,.55);display:grid;place-items:center;padding:16px}
+.modal-card{
+  width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.35;
+  border:3px solid var(--pencil);border-radius:18px;padding:22px 24px;box-shadow:6px 6px 0 rgba(27,39,68,.3);
+}
+.modal-card h2{font-size:22px;margin:0 0 12px;color:var(--acc)}
+.modal-card h3{font-size:16px;margin:20px 0 8px}
+.modal-card label{display:block;font-weight:600;margin:12px 0 4px}
+.modal-card select,.modal-card input{width:100%;font:inherit;padding:9px 10px;border:2px solid var(--pencil);border-radius:10px;background:#fff;color:var(--ink)}
+.modal-card select:focus-visible,.modal-card input:focus-visible,.m-btn:focus-visible{outline:3px solid var(--w4);outline-offset:2px}
+.m-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.m-btn{font:inherit;font-weight:600;padding:9px 18px;border:2px solid var(--pencil);border-radius:10px;background:#fff;color:var(--ink);cursor:pointer}
+.m-btn.primary{background:var(--acc);color:#fff}
+.m-msg{margin:10px 0 0;font-weight:600}
+.m-msg.err{color:var(--acc)}
+.m-msg.ok{color:#12804A}
+.m-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.m-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid #D5DBE8;border-radius:10px}
+.m-list .m-txt{flex:1;min-width:0;overflow-wrap:anywhere}
+.m-list .m-btn{padding:4px 12px;font-size:14px}
+.m-empty{color:#5B6580}
+.hint{font-size:14px;color:#5B6580;margin:12px 0 0}
+
+/* ---------- Die Linie ---------- */.lineblk{display:grid;grid-template-rows:auto 1fr;padding-block:.9cqw .8cqw}
 .line-head{display:flex;align-items:center;gap:.8cqw}
 .sign{font-weight:700;font-size:1.4cqw;background:var(--line);color:#fff;border:.18cqw solid var(--pencil);border-radius:.6cqw;padding:0 .8cqw;transform:rotate(-2deg);line-height:1.5}
 .line-head .tag{margin:0;font-size:1.7cqw}
@@ -225,6 +267,14 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     </div>
   </section>
 
+  <section class="panel hw" aria-label="Hausaufgaben">
+    <div class="hw-head">
+      <h2 class="tag">Hausaufgaben</h2>
+      <button class="btn sm" id="hwOpen" type="button">Eintragen</button>
+    </div>
+    <ul class="hw-list" id="hwList"></ul>
+  </section>
+
   <section class="panel lineblk" aria-label="Tagesablauf">
     <div class="line-head">
       <h2 class="tag" id="lineTitle">Unser Tag</h2>
@@ -242,6 +292,26 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     <a href="https://www.shysafari.com/" target="_blank" rel="noopener noreferrer">ShySafari</a><span class="sep2" aria-hidden="true">|</span><a href="https://www.taskcards.de/#/account/3185526b-172e-4384-ab2a-3b35646f1ee9/boards" target="_blank" rel="noopener noreferrer">Taskcards</a><span class="sep2" aria-hidden="true">|</span><a href="https://mein.westermann.de/auth/login?client_id=Nvw0ZA8Z&amp;response_type=code&amp;scope=openid&amp;redirect_uri=https://bibox2.westermann.de/login&amp;state=PwRzS9VoykHwA0cfhBNL&amp;code_challenge_method=S256&amp;code_challenge=qFQ2mUkhyuUIZvh2dPSVX8CP5ehEpAU182HifvK_Gco" target="_blank" rel="noopener noreferrer">BiBox</a>
   </nav>
 
+<div class="modal" id="hwModal" hidden role="dialog" aria-modal="true" aria-labelledby="hwTitle">
+  <div class="modal-card">
+    <h2 id="hwTitle">Hausaufgabe eintragen</h2>
+    <form id="hwForm" novalidate>
+      <label for="hwFach">Fach</label>
+      <select id="hwFach"></select>
+      <label for="hwDate">Fällig am</label>
+      <input id="hwDate" type="date">
+      <label for="hwText">Aufgabe</label>
+      <input id="hwText" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Buch Seite 12, Aufgabe 3">
+      <p class="m-msg" id="hwMsg" hidden></p>
+      <div class="m-actions">
+        <button class="m-btn primary" type="submit">Speichern</button>
+        <button class="m-btn" id="hwClose" type="button">Schließen</button>
+      </div>
+    </form>
+    <h3>Eingetragen</h3>
+    <ul class="m-list" id="hwAdmin"></ul>
+    <p class="hint">Eine Hausaufgabe wird automatisch gelöscht, wenn die letzte Stunde des Fachs am Fälligkeitstag vorbei ist. Die Einträge bleiben nur in diesem Browser gespeichert.</p>
+  </div>
 </div>
 
 <script>
@@ -413,7 +483,116 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   for(var i=0;i<pre.length;i++){pre[i].addEventListener('click',function(){setMin(+this.getAttribute('data-min'));});}
   showTimer();
 
-  function loop(){var n=new Date();renderHead(n);render(n);}
+    /* ---------- Hausaufgaben ---------- */
+  var HW_KEY='klassenboard-hausaufgaben-v1';
+  var hw=[];
+  var WD_KURZ=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  function hwLoad(){
+    try{
+      var r=localStorage.getItem(HW_KEY),a=r?JSON.parse(r):[];
+      if(Array.isArray(a)){hw=a.filter(function(h){return h&&SUBJ[h.fach]&&/^\d{4}-\d{2}-\d{2}$/.test(h.due)&&typeof h.text==='string';});}
+    }catch(e){hw=[];}
+  }
+  function hwSave(){try{localStorage.setItem(HW_KEY,JSON.stringify(hw));}catch(e){}}
+  function isoOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fromIso(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  /* Ablauf: Ende der letzten Stunde des Fachs am Fälligkeitstag, sonst Ende des Tages */
+  function expiryOf(h){
+    var d=fromIso(h.due),pl=PLAN[d.getDay()],last=-1,i;
+    if(pl){for(i=0;i<pl.length;i++){var it=pl[i];if(typeof it!=='string'&&it.f===h.fach){last=Math.max(last,mins(it.e));}}}
+    if(last<0)return new Date(d.getFullYear(),d.getMonth(),d.getDate(),23,59,59);
+    return new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(last/60),last%60,0);
+  }
+  function hwPurge(now){
+    var keep=hw.filter(function(h){return now<expiryOf(h);});
+    if(keep.length!==hw.length){hw=keep;hwSave();return true;}
+    return false;
+  }
+  function hwSorted(){
+    return hw.slice().sort(function(a,b){return a.due<b.due?-1:(a.due>b.due?1:(a.fach<b.fach?-1:(a.fach>b.fach?1:0)));});
+  }
+  function dueLabel(due,today,tomorrow){
+    if(due===today)return 'heute fällig';
+    if(due===tomorrow)return 'morgen fällig';
+    var d=fromIso(due);
+    return 'bis '+WD_KURZ[d.getDay()]+', '+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';
+  }
+  var hwShown='';
+  function hwRender(now){
+    var today=isoOf(now),tomorrow=isoOf(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
+    var list=hwSorted(),key=today+'|'+JSON.stringify(list);
+    if(key===hwShown)return;
+    hwShown=key;
+    var ul=$('hwList'),html='',i;
+    if(!list.length){ul.innerHTML='<li class="hw-empty">Keine Hausaufgaben.</li>';return;}
+    for(i=0;i<list.length;i++){
+      var h=list[i],sj=SUBJ[h.fach],isToday=h.due===today;
+      html+='<li class="hw-item'+(isToday?' today':'')+'" style="--sc:'+sj.c+';--img:url('+sj.img+')"><span class="hw-img" aria-hidden="true"></span><span class="hw-t"><span class="hw-task"><span class="hw-fach">'+sj.abbr+'</span> '+esc(h.text)+'</span><span class="hw-due">'+dueLabel(h.due,today,tomorrow)+'</span></span></li>';
+    }
+    ul.innerHTML=html;
+    var items=ul.children,removed=0;
+    while(ul.scrollHeight>ul.clientHeight+1&&items.length>1){ul.removeChild(items[items.length-1]);removed++;}
+    if(removed>0){
+      var more=document.createElement('li');more.className='hw-more';more.textContent='+ '+removed+' weitere';ul.appendChild(more);
+      while(ul.scrollHeight>ul.clientHeight+1&&items.length>2){ul.removeChild(items[items.length-2]);removed++;more.textContent='+ '+removed+' weitere';}
+    }
+  }
+  function nextLessonIso(fach){
+    var base=new Date(),i;
+    for(i=1;i<=21;i++){
+      var d=new Date(base.getFullYear(),base.getMonth(),base.getDate()+i),pl=PLAN[d.getDay()],j;
+      if(pl){for(j=0;j<pl.length;j++){if(typeof pl[j]!=='string'&&pl[j].f===fach)return isoOf(d);}}
+    }
+    return isoOf(new Date(base.getFullYear(),base.getMonth(),base.getDate()+1));
+  }
+  var modal=$('hwModal'),fSel=$('hwFach'),fDate=$('hwDate'),fText=$('hwText'),fMsg=$('hwMsg'),dateTouched=false;
+  (function(){var o='',k;for(k in SUBJ){if(SUBJ.hasOwnProperty(k))o+='<option value="'+k+'">'+k+'</option>';}fSel.innerHTML=o;})();
+  function msg(text,kind){fMsg.textContent=text;fMsg.className='m-msg '+kind;fMsg.hidden=!text;}
+  function hwAdminRender(){
+    var list=hwSorted(),ul=$('hwAdmin'),html='',today=isoOf(new Date()),tomorrow=isoOf(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()+1)),i;
+    if(!list.length){ul.innerHTML='<li class="m-empty">Noch nichts eingetragen.</li>';return;}
+    for(i=0;i<list.length;i++){
+      var h=list[i];
+      html+='<li><span class="m-txt"><b>'+SUBJ[h.fach].abbr+'</b> '+esc(h.text)+'<br><small>'+dueLabel(h.due,today,tomorrow)+'</small></span><button class="m-btn" type="button" data-del="'+esc(h.id)+'">Löschen</button></li>';
+    }
+    ul.innerHTML=html;
+  }
+  function openModal(){
+    dateTouched=false;fText.value='';msg('','');
+    fDate.value=nextLessonIso(fSel.value);
+    hwAdminRender();modal.hidden=false;fSel.focus();
+  }
+  function closeModal(){modal.hidden=true;$('hwOpen').focus();}
+  $('hwOpen').addEventListener('click',openModal);
+  $('hwClose').addEventListener('click',closeModal);
+  modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden)closeModal();});
+  fSel.addEventListener('change',function(){if(!dateTouched)fDate.value=nextLessonIso(fSel.value);});
+  fDate.addEventListener('input',function(){dateTouched=true;});
+  $('hwForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var fach=fSel.value,due=fDate.value,text=fText.value.replace(/\s+/g,' ').trim();
+    if(!text){msg('Bitte die Aufgabe eintragen.','err');fText.focus();return;}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(due)){msg('Bitte ein Datum wählen.','err');fDate.focus();return;}
+    var h={id:String(Date.now())+Math.random().toString(36).slice(2,6),fach:fach,due:due,text:text};
+    if(!(new Date()<expiryOf(h))){msg('Dieses Datum ist für das Fach schon vorbei.','err');fDate.focus();return;}
+    hw.push(h);hwSave();hwShown='';hwRender(new Date());hwAdminRender();
+    fText.value='';msg('Gespeichert.','ok');fText.focus();
+  });
+  $('hwAdmin').addEventListener('click',function(e){
+    var id=e.target&&e.target.getAttribute?e.target.getAttribute('data-del'):null;
+    if(!id)return;
+    hw=hw.filter(function(h){return h.id!==id;});hwSave();hwShown='';hwRender(new Date());hwAdminRender();
+  });
+  hwLoad();
+
+  function loop(){
+    var n=new Date();
+    renderHead(n);render(n);
+    if(hwPurge(n)&&!modal.hidden)hwAdminRender();
+    hwRender(n);
+  }
   loop();setInterval(loop,1000);
 })();
 </script>
