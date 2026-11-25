@@ -35,9 +35,13 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   font-size:1.12cqw;line-height:1.25;hyphens:auto;
   display:grid;gap:1.1cqw;padding:1.2cqw;
   grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
-  grid-template-rows:8.8cqw minmax(0,1fr) 16.75cqw 8cqw;
-  grid-template-areas:"head head head" "timer now day" "line line line" "spruch spruch spruch";
+  grid-template-rows:7.6cqw minmax(0,1fr) 18.6cqw 6.4cqw auto;
+  grid-template-areas:"head head head" "timer now day" "line line line" "spruch spruch spruch" "links links links";
 }
+.links{grid-area:links;text-align:center;font-size:8pt;line-height:1.3;color:var(--ink)}
+.links a{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+.links a:hover,.links a:focus-visible{color:var(--acc)}
+.links .sep2{margin:0 .7em;opacity:.6}
 .head{grid-area:head}.day{grid-area:day}.now{grid-area:now}.timer{grid-area:timer}.lineblk{grid-area:line}.spruch{grid-area:spruch}
 .day{--tone:var(--w4)}.now{--tone:var(--w1)}.lineblk{--tone:var(--w5)}.spruch{--tone:var(--w2)}
 
@@ -83,14 +87,14 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 /* ---------- Jetzt + Gleich ---------- */
 .now-main{display:flex;align-items:center;gap:1.2cqw}
 .bigchip{
-  width:7cqw;height:7cqw;border-radius:50% 46% 52% 48%;flex:none;font-size:0;
+  width:6.2cqw;height:6.2cqw;border-radius:50% 46% 52% 48%;flex:none;font-size:0;
   background:var(--sc,#fff) center/125% no-repeat;border:.22cqw solid var(--pencil);box-shadow:0 0 0 .26cqw var(--sc,transparent);
 }
-.now-name{font-weight:700;font-size:3cqw;line-height:1.05}
+.now-name{font-weight:700;font-size:2.7cqw;line-height:1.05}
 .now-time{font-weight:400;font-size:1.5cqw;margin-top:.3cqw}
 .now-left{font-weight:600;color:var(--acc);font-size:1.5cqw;margin-top:.1cqw}
 .next{
-  margin-top:.9cqw;padding-top:.8cqw;border-top:.15cqw dashed var(--pencil);display:flex;align-items:center;gap:.9cqw;flex-wrap:wrap;
+  margin-top:.7cqw;padding-top:.6cqw;border-top:.15cqw dashed var(--pencil);display:flex;align-items:center;gap:.9cqw;flex-wrap:wrap;
   font-weight:600;font-size:1.8cqw;
 }
 .next .chip{
@@ -127,13 +131,13 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .sign{font-weight:700;font-size:1.4cqw;background:var(--line);color:#fff;border:.18cqw solid var(--pencil);border-radius:.6cqw;padding:0 .8cqw;transform:rotate(-2deg);line-height:1.5}
 .line-head .tag{margin:0;font-size:1.7cqw}
 .klasse{margin-left:auto;font-size:1.3cqw;opacity:.85}
-.line{--cy:6cqw;display:flex;align-items:flex-start}
+.line{--cy:7.3cqw;display:flex;align-items:flex-start}
 .stop{
-  --sz:5.6cqw;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
+  --sz:7cqw;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
   padding:calc(var(--cy) - var(--sz) / 2) .2cqw 0;
 }
 .stop.brk{flex:.6 1 0;--sz:1.8cqw}
-.stop.now{--sz:6.6cqw}
+.stop.now{--sz:8.3cqw}
 .stop.now.brk{--sz:2.6cqw}
 .stop::before{
   content:"";position:absolute;left:0;right:0;top:calc(var(--cy) - .4cqw);height:.8cqw;background:var(--line);border-block:.15cqw solid var(--pencil);
@@ -150,21 +154,22 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .stop .nm{font-weight:600;font-size:1.25cqw;line-height:1.1;margin-top:.55cqw;max-width:100%}
 .stop .tm{font-weight:400;font-size:1.1cqw;opacity:.85}
 .stop.brk .nm{color:var(--blue);font-size:1.15cqw}
-.stop.past .dot,.stop.past .nm,.stop.past .tm{opacity:.5}
+.stop.past .dot{filter:grayscale(1);opacity:.8;box-shadow:0 0 0 .25cqw #BBC1CC}
+.stop.past .nm,.stop.past .tm{color:#6B7384}
 .here{
   position:absolute;top:0;left:50%;translate:-50% 0;font-weight:600;font-size:1.2cqw;white-space:nowrap;z-index:2;
   background:#fff;color:var(--acc);border:.18cqw solid var(--pencil);border-radius:var(--rad-s);padding:0 .8cqw 0 .4cqw;display:flex;align-items:center;
 }
 .zug{height:1.6cqw;width:auto;mix-blend-mode:multiply;margin-right:.3cqw}
 .here::after{content:"";position:absolute;left:50%;bottom:-.5cqw;margin-left:-.4cqw;width:.7cqw;height:.7cqw;background:#fff;border-right:.18cqw solid var(--pencil);border-bottom:.18cqw solid var(--pencil);transform:rotate(45deg)}
-.ok{position:absolute;right:-.3cqw;top:-.3cqw;width:1.3cqw;height:1.3cqw;border-radius:50%;background:var(--w3);border:.16cqw solid var(--pencil);display:none;place-items:center}
-.ok svg{width:70%;height:70%}
-.stop.past:not(.brk) .ok{display:grid}
+.ok{display:none;position:absolute;left:50%;top:var(--cy);translate:-50% -50%;width:calc(var(--sz) * .85);height:calc(var(--sz) * .85);z-index:3;pointer-events:none;filter:drop-shadow(0 0 .12cqw #fff) drop-shadow(0 0 .12cqw #fff) drop-shadow(0 0 .2cqw #fff)}
+.ok svg{display:block;width:100%;height:100%}
+.stop.past:not(.brk) .ok{display:block}
 
 /* ---------- Mutmachspruch ---------- */
 .spruch{display:flex;align-items:center;gap:1.6cqw}
 .spruch .tag{margin:0;flex:none;max-width:12cqw}
-.spruch-text{font-weight:600;font-size:2.5cqw;line-height:1.2;text-wrap:balance;flex:1 1 auto;min-width:0}
+.spruch-text{font-weight:600;font-size:2.3cqw;line-height:1.2;text-wrap:balance;flex:1 1 auto;min-width:0}
 .spruch .btn{flex:none}
 </style>
 
@@ -246,6 +251,10 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     <button class="btn" id="spruchNeu" type="button">Neuer Spruch</button>
   </section>
 
+  <nav class="links" aria-label="Links">
+    <a href="https://www.shysafari.com/" target="_blank" rel="noopener noreferrer">ShySafari</a><span class="sep2" aria-hidden="true">|</span><a href="https://www.taskcards.de/#/account/3185526b-172e-4384-ab2a-3b35646f1ee9/boards" target="_blank" rel="noopener noreferrer">Taskcards</a><span class="sep2" aria-hidden="true">|</span><a href="https://mein.westermann.de/auth/login?client_id=Nvw0ZA8Z&amp;response_type=code&amp;scope=openid&amp;redirect_uri=https://bibox2.westermann.de/login&amp;state=PwRzS9VoykHwA0cfhBNL&amp;code_challenge_method=S256&amp;code_challenge=qFQ2mUkhyuUIZvh2dPSVX8CP5ehEpAU182HifvK_Gco" target="_blank" rel="noopener noreferrer">BiBox</a>
+  </nav>
+
 </div>
 
 <script>
@@ -321,7 +330,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     }
     return out;
   }
-  var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#1B2744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 6.5"/></svg>';
+  var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#12A150" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.8 12.8l5.8 5.8L20.4 6"/></svg>';
   var HERE='<span class="here"><img class="zug" src="img/zug.jpg" alt="">Du bist hier</span>';
   var lastKey='';
   function render(now){
@@ -344,7 +353,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
           html+='<div class="stop brk '+st+'">'+(st==='now'?HERE:'')+'<span class="dot"></span><span class="nm">'+it.name+'</span></div>';
         }else{
           var sj=SUBJ[it.f];
-          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?HERE:'')+'<span class="dot">'+sj.abbr+'<span class="ok">'+CHECK+'</span></span><span class="nm">'+it.f+'</span><span class="tm tab">'+it.s+'</span></div>';
+          html+='<div class="stop '+st+'" style="--sc:'+sj.c+';--img:url('+sj.img+')">'+(st==='now'?HERE:'')+'<span class="dot">'+sj.abbr+'</span><span class="ok">'+CHECK+'</span><span class="nm">'+it.f+'</span><span class="tm tab">'+it.s+'</span></div>';
         }
       }
       $('line').innerHTML=html;
