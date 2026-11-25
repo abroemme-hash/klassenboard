@@ -35,7 +35,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   font-size:1.12cqw;line-height:1.25;hyphens:auto;
   display:grid;gap:1.1cqw;padding:1.2cqw;
   grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
-  grid-template-rows:7.6cqw minmax(0,1fr) 18.6cqw 6.4cqw auto;
+  grid-template-rows:8.2cqw minmax(0,1fr) 16.6cqw 7cqw auto;
   grid-template-areas:"head head head" "timer now day" "line line line" "spruch spruch spruch" "links links links";
 }
 .links{grid-area:links;text-align:center;font-size:8pt;line-height:1.3;color:var(--ink)}
@@ -131,13 +131,13 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .sign{font-weight:700;font-size:1.4cqw;background:var(--line);color:#fff;border:.18cqw solid var(--pencil);border-radius:.6cqw;padding:0 .8cqw;transform:rotate(-2deg);line-height:1.5}
 .line-head .tag{margin:0;font-size:1.7cqw}
 .klasse{margin-left:auto;font-size:1.3cqw;opacity:.85}
-.line{--cy:7.1cqw;display:flex;align-items:flex-start}
+.line{--cy:6.2cqw;display:flex;align-items:flex-start}
 .stop{
-  --sz:7cqw;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
+  --sz:5.6cqw;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
   padding:calc(var(--cy) - var(--sz) / 2) .2cqw 0;
 }
 .stop.brk{flex:.6 1 0;--sz:1.8cqw}
-.stop.now{--sz:8cqw}
+.stop.now{--sz:6.6cqw}
 .stop.now.brk{--sz:2.6cqw}
 .stop::before{
   content:"";position:absolute;left:0;right:0;top:calc(var(--cy) - .4cqw);height:.8cqw;background:var(--line);border-block:.15cqw solid var(--pencil);
@@ -151,7 +151,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 }
 .stop.brk .dot{background:#fff;box-shadow:none;border-radius:50%}
 .stop.now .dot{box-shadow:0 0 0 .35cqw var(--w1),0 0 0 .55cqw var(--pencil)}
-.stop .nm{font-weight:700;font-size:1.55cqw;line-height:1.1;margin-top:.55cqw;max-width:100%}
+.stop .nm{font-weight:700;font-size:1.4cqw;line-height:1.1;margin-top:.55cqw;max-width:100%}
 .stop .tm{font-weight:400;font-size:1.1cqw;opacity:.85}
 .stop.brk .nm{color:var(--blue);font-size:1.15cqw}
 .stop.past .dot{filter:grayscale(1);opacity:.8;box-shadow:0 0 0 .25cqw #BBC1CC}
@@ -238,9 +238,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   <section class="panel lineblk" aria-label="Tagesablauf">
     <div class="line-head">
-      <span class="sign">4b</span>
       <h2 class="tag">Unser Tag</h2>
-      <span class="klasse" id="planInfo">Dienstag</span>
     </div>
     <div class="line" id="line"></div>
   </section>
@@ -358,7 +356,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
       }
       $('line').innerHTML=html;
     }
-    $('planInfo').textContent=weekend?'Vorschau Montag':TAGE[now.getDay()];
 
     var chip=$('nowChip'),nm=$('nowName'),tm=$('nowTime'),lf=$('nowLeft'),tag=$('nowTag');
     var nextLesson=null,startAt=cur+1;
