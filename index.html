@@ -74,10 +74,11 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .bubble::after{content:"";position:absolute;left:1.4cqw;bottom:-.75cqw;width:1.1cqw;height:1.1cqw;background:#fff;border-right:.2cqw solid var(--pencil);border-bottom:.2cqw solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
 /* ---------- Tag + Datum ---------- */
-.wd{font-weight:700;font-size:4cqw;line-height:1.05;overflow-wrap:break-word}
-.date-de{font-weight:500;font-size:2.2cqw;line-height:1.15;margin-top:.5cqw}
+.date-de{font-weight:700;font-size:2.7cqw;line-height:1.1;margin-top:.2cqw}
+.wd{font-weight:600;font-size:2.1cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
 .sep{border:0;border-top:.15cqw dashed var(--pencil);opacity:.4;margin:.8cqw 0}
-.date-en{font-weight:500;font-size:1.7cqw;line-height:1.2;color:var(--blue)}
+.date-en{font-weight:500;font-size:1.9cqw;line-height:1.2;color:var(--blue)}
+.ord{color:var(--acc);font-weight:700}
 
 /* ---------- Jetzt + Gleich ---------- */
 .now-main{display:flex;align-items:center;gap:1.2cqw}
@@ -194,10 +195,10 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   <section class="panel day" aria-label="Datum">
     <span class="tag">Heute ist</span>
-    <div class="wd" id="wd">Dienstag</div>
     <div class="date-de tab" id="dateDe">24. November 2026</div>
+    <div class="wd" id="wd">Dienstag</div>
     <hr class="sep">
-    <div class="date-en" id="dateEn">Tuesday, November 24th</div>
+    <div class="date-en tab" id="dateEn">24<span class="ord">th</span> November 2026</div>
   </section>
 
   <section class="panel now" aria-label="Jetzt und gleich">
@@ -268,7 +269,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     $('gruss').textContent=(h<11?'Guten Morgen':(h<18?'Guten Tag':'Guten Abend'))+', 4b!';
     $('wd').textContent=TAGE[now.getDay()];
     $('dateDe').textContent=now.getDate()+'. '+MONATE[now.getMonth()]+' '+now.getFullYear();
-    $('dateEn').textContent=DAYS_EN[now.getDay()]+', '+MONTHS_EN[now.getMonth()]+' '+now.getDate()+ord(now.getDate());
+    $('dateEn').innerHTML=now.getDate()+'<span class="ord">'+ord(now.getDate())+'</span> '+MONTHS_EN[now.getMonth()]+' '+now.getFullYear();
   }
 
   /* ---------- Mutmachsprüche ---------- */
