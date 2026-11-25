@@ -264,13 +264,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
       <button class="btn go" id="tGo" type="button">Start</button>
       <button class="btn" id="tReset" type="button">Zurück</button>
     </div>
-    <div class="ctl" id="tSet">
-      <button class="btn" id="tMinus" type="button" aria-label="Eine Minute weniger">−1</button>
-      <button class="btn" id="tPlus" type="button" aria-label="Eine Minute mehr">+1</button>
-      <button class="btn preset" data-min="5" type="button">5</button>
-      <button class="btn preset" data-min="10" type="button">10</button>
-      <button class="btn" id="tTest" type="button" title="Alarmton anhören">Ton testen</button>
-    </div>
   </section>
 
   <section class="panel hw" aria-label="Hausaufgaben">
@@ -435,14 +428,14 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   /* ---------- Timer mit lautem Ton ---------- */
   var setSec=300,remain=300,running=false,endAt=0,iv=null,ctx=null;
-  var clock=$('clock'),cMin=$('cMin'),cSec=$('cSec'),bar=$('bar'),goBtn=$('tGo'),setRow=$('tSet');
+  var clock=$('clock'),cMin=$('cMin'),cSec=$('cSec'),bar=$('bar'),goBtn=$('tGo');
   function showTimer(){
     var s=Math.max(0,Math.ceil(remain));
     cMin.value=pad(Math.floor(s/60));cSec.value=pad(s%60);
     bar.style.width=(setSec>0?Math.max(0,remain/setSec)*100:0)+'%';
     clock.classList.toggle('warn',running&&s<=10&&s>0);
   }
-  function enableSet(on){var b=setRow.querySelectorAll('button:not(#tTest)');for(var i=0;i<b.length;i++)b[i].disabled=!on;cMin.readOnly=cSec.readOnly=!on;}
+  function enableSet(on){cMin.readOnly=cSec.readOnly=!on;}
   function audio(){
     if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}
     if(ctx.state==='suspended')ctx.resume();
@@ -502,14 +495,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   $('tReset').addEventListener('click',function(){
     stopAlarm();clearInterval(iv);iv=null;running=false;remain=setSec;resetClock();goBtn.textContent='Start';enableSet(true);showTimer();
   });
-  $('tTest').addEventListener('click',alarm);
-  function setSeconds(sec){
-    if(running)return;
-    sec=Math.max(0,Math.min(99*60+59,sec));setSec=sec;remain=sec;resetClock();goBtn.textContent='Start';showTimer();
-  }
-  function setMin(m){setSeconds(m*60);}
-  $('tPlus').addEventListener('click',function(){setSeconds(setSec+60);});
-  $('tMinus').addEventListener('click',function(){setSeconds(Math.max(1,setSec-60));});
   /* Minuten und Sekunden direkt eintippen */
   function readInputs(){
     var m=parseInt(cMin.value,10)||0,s=parseInt(cSec.value,10)||0;
@@ -526,8 +511,6 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     el.addEventListener('blur',function(){if(!el.readOnly&&!running)showTimer();});
     el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();el.blur();goBtn.click();}});
   });
-  var pre=document.querySelectorAll('.preset');
-  for(var i=0;i<pre.length;i++){pre[i].addEventListener('click',function(){setMin(+this.getAttribute('data-min'));});}
   showTimer();
 
     /* ---------- Hausaufgaben ---------- */
