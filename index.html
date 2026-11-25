@@ -74,7 +74,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .bubble::after{content:"";position:absolute;left:1.4cqw;bottom:-.75cqw;width:1.1cqw;height:1.1cqw;background:#fff;border-right:.2cqw solid var(--pencil);border-bottom:.2cqw solid var(--pencil);transform:rotate(45deg) skew(8deg,8deg)}
 
 /* ---------- Tag + Datum ---------- */
-.date-de{font-weight:700;font-size:2.7cqw;line-height:1.1;margin-top:.2cqw}
+.date-de{font-weight:700;font-size:3.5cqw;line-height:1.1;margin-top:.2cqw}
 .wd{font-weight:600;font-size:2.1cqw;line-height:1.15;margin-top:.4cqw;overflow-wrap:break-word}
 .sep{border:0;border-top:.15cqw dashed var(--pencil);opacity:.4;margin:.8cqw 0}
 .date-en{font-weight:500;font-size:1.9cqw;line-height:1.2;color:var(--blue)}
@@ -195,7 +195,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 
   <section class="panel day" aria-label="Datum">
     <span class="tag">Heute ist</span>
-    <div class="date-de tab" id="dateDe">24. November 2026</div>
+    <div class="date-de tab" id="dateDe">24.11.2026</div>
     <div class="wd" id="wd">Dienstag</div>
     <hr class="sep">
     <div class="date-en tab" id="dateEn">24<span class="ord">th</span> November 2026</div>
@@ -268,7 +268,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
     var h=now.getHours();
     $('gruss').textContent=(h<11?'Guten Morgen':(h<18?'Guten Tag':'Guten Abend'))+', 4b!';
     $('wd').textContent=TAGE[now.getDay()];
-    $('dateDe').textContent=now.getDate()+'. '+MONATE[now.getMonth()]+' '+now.getFullYear();
+    $('dateDe').textContent=pad(now.getDate())+'.'+pad(now.getMonth()+1)+'.'+now.getFullYear();
     $('dateEn').innerHTML=now.getDate()+'<span class="ord">'+ord(now.getDate())+'</span> '+MONTHS_EN[now.getMonth()]+' '+now.getFullYear();
   }
 
