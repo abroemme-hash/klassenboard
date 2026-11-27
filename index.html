@@ -221,6 +221,31 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 .spruch .tag{margin:0;flex:none;max-width:12cqw}
 .spruch-text{font-weight:600;font-size:2.3cqw;line-height:1.2;text-wrap:balance;flex:1 1 auto;min-width:0}
 .spruch .btn{flex:none}
+/* ---------- Skyline als Hintergrund der ganzen Bühne ---------- */
+.stage{background:url("img/skyline.jpg") center/cover no-repeat;border-radius:1.4cqw;gap:.9cqw;padding:1cqw;grid-template-rows:13cqw minmax(0,1fr) 15.4cqw 6cqw auto}
+.head{align-items:flex-start;padding:0;border:0;background:none;box-shadow:none}
+.greet-text{max-width:48%;background:rgba(255,255,255,.9)}
+.baer{height:78%;bottom:0}
+.bubble{top:2.4cqw;right:calc(1.5% + 10cqw)}
+.panel{--fill:rgba(255,255,255,.92)}
+.panel.timer{--fill:var(--board)}
+.links{justify-self:center;background:rgba(255,255,255,.92);border-radius:2cqw;padding:0 1.2cqw}
+/* ---------- Jahreszeiten: Farbschleier über der Skyline, fallende Teilchen, Zeichnung im Kopf ---------- */
+.stage{background:linear-gradient(var(--veil1,transparent),var(--veil2,transparent)),var(--sky,url("img/skyline.jpg")) center/cover no-repeat}
+.stage[data-season="winter"]{--veil1:rgba(220,236,255,.45);--veil2:rgba(255,255,255,.55)}
+.stage[data-season="advent"]{--veil1:rgba(28,38,92,.58);--veil2:rgba(112,48,70,.34)}
+.stage[data-season="fruehling"]{--veil1:rgba(190,235,205,.34);--veil2:rgba(255,205,225,.30)}
+.stage[data-season="sommer"]{--veil1:rgba(120,200,255,.28);--veil2:rgba(255,214,90,.34)}
+.stage[data-season="herbst"]{--veil1:rgba(255,180,90,.34);--veil2:rgba(170,80,30,.30)}
+.stage[data-season="schulstart"]{--veil1:rgba(140,200,255,.26);--veil2:rgba(255,230,120,.30)}
+.stage[data-season="halbjahr"]{--veil1:rgba(160,180,235,.34);--veil2:rgba(235,240,255,.40)}
+.stage[data-season="ferien"]{--veil1:rgba(60,190,225,.34);--veil2:rgba(255,196,100,.40)}
+.fall{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:inherit}
+.fall i{position:absolute;top:-4cqw;width:var(--s);height:var(--s);animation:fall var(--d) linear infinite;animation-delay:var(--w);background:var(--img) center/contain no-repeat}
+@keyframes fall{to{transform:translate(var(--x),62cqw) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.fall{display:none}}
+.deco{position:absolute;left:58%;bottom:0;height:96%;pointer-events:none;z-index:1}
+.deco svg{display:block;height:100%;width:auto}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -238,6 +263,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
 </svg>
 
 <div class="stage" id="stage">
+  <div class="fall" id="fall" aria-hidden="true"></div>
 
   <header class="head">
     <div class="greet-text">
@@ -245,6 +271,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
       <p class="sub">Schön, dass du da bist!</p>
     </div>
     <div class="bubble" id="bubble" aria-hidden="true">Hello!</div>
+    <div class="deco" id="deco" aria-hidden="true"></div>
     <img class="baer" src="img/baer.jpg" alt="" width="560" height="560">
   </header>
 
@@ -288,7 +315,7 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   </section>
 
   <nav class="links" aria-label="Links">
-    <a href="https://www.shysafari.com/" target="_blank" rel="noopener noreferrer">ShySafari</a><span class="sep2" aria-hidden="true">|</span><a href="https://www.taskcards.de/#/account/3185526b-172e-4384-ab2a-3b35646f1ee9/boards" target="_blank" rel="noopener noreferrer">Taskcards</a><span class="sep2" aria-hidden="true">|</span><a href="https://mein.westermann.de/auth/login?client_id=Nvw0ZA8Z&amp;response_type=code&amp;scope=openid&amp;redirect_uri=https://bibox2.westermann.de/login&amp;state=PwRzS9VoykHwA0cfhBNL&amp;code_challenge_method=S256&amp;code_challenge=qFQ2mUkhyuUIZvh2dPSVX8CP5ehEpAU182HifvK_Gco" target="_blank" rel="noopener noreferrer">BiBox</a>
+    <a href="https://www.shysafari.com/" target="_blank" rel="noopener noreferrer">ShySafari</a><span class="sep2" aria-hidden="true">|</span><a href="https://www.taskcards.de/#/account/3185526b-172e-4384-ab2a-3b35646f1ee9/boards" target="_blank" rel="noopener noreferrer">Taskcards</a><span class="sep2" aria-hidden="true">|</span><a href="https://mein.westermann.de/auth/login?client_id=Nvw0ZA8Z&amp;response_type=code&amp;scope=openid&amp;redirect_uri=https://bibox2.westermann.de/login&amp;state=PwRzS9VoykHwA0cfhBNL&amp;code_challenge_method=S256&amp;code_challenge=qFQ2mUkhyuUIZvh2dPSVX8CP5ehEpAU182HifvK_Gco" target="_blank" rel="noopener noreferrer">BiBox</a><span class="sep2" aria-hidden="true">|</span><a href="https://abroemme-hash.github.io/adventskalender/" target="_blank" rel="noopener noreferrer">Adventskalender</a>
   </nav>
 
 <div class="modal" id="hwModal" hidden role="dialog" aria-modal="true" aria-labelledby="hwTitle">
@@ -645,8 +672,83 @@ button:focus-visible{outline:4px solid var(--w4);outline-offset:3px}
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!delModal.hidden)closeDel();});
   hwLoad();
 
+  /* ---------- Jahreszeiten ---------- */
+  /* Schultermine Berlin. Bitte jedes Schuljahr prüfen und ergänzen. [von, bis] */
+  var TERMINE={
+    schulstart:[['2026-08-24','2026-09-11'],['2027-08-16','2027-09-03']],
+    halbjahr:[['2027-01-25','2027-01-31']],
+    ferien:[['2027-06-21','2027-08-14']]
+  };
+  function ln(a){return '<svg viewBox="0 0 120 100" fill="none" stroke="#2B3A66" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'+a+'</svg>';}
+  function star(x,y,c){return '<path d="M'+x+' '+(y-9)+'l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L'+(x-9)+' '+(y-2)+'l6-1z" fill="'+c+'"/>';}
+  function kranz(lit){
+    var s='<ellipse cx="60" cy="78" rx="52" ry="16" fill="#2F7D4F"/>',i,x,farben='#D43B55';
+    for(i=0;i<4;i++){
+      x=24+i*24;
+      s+='<rect x="'+(x-6)+'" y="40" width="12" height="36" rx="3" fill="'+farben+'"/><path d="M'+x+' 40v-5"/>';
+      if(i<lit)s+='<path d="M'+x+' 17c7 8 7 16 0 18-7-2-7-10 0-18z" fill="#FFC83D" stroke="#E8791A"/>';
+    }
+    return ln(s+'<path d="M14 80q12 8 24 4M50 90q10 4 22 0M84 86q12 0 22-8" stroke="#8FD1A0"/>');
+  }
+  var SAISON={
+    winter:{gruss:'Hab einen schönen Wintertag!',teil:'schnee',deco:ln('<circle cx="60" cy="74" r="23" fill="#fff"/><circle cx="60" cy="40" r="15" fill="#fff"/><path d="M46 28h28M50 28V12h20v16" fill="#2B3A66"/><path d="M47 54q13 8 26 0" stroke="#D43B55" stroke-width="7"/><path d="M61 42l14 4-14 3z" fill="#F7934C"/><circle cx="55" cy="36" r="1.5"/><circle cx="66" cy="36" r="1.5"/>')},
+    advent:{gruss:'Eine schöne Adventszeit!',teil:'stern',deco:null},
+    fruehling:{gruss:'Der Frühling ist da!',teil:'bluete',deco:ln('<path d="M60 98V50M60 78q-18 0-24-14 18-2 24 14M60 70q18 0 24-14-18-2-24 14" fill="#8FD1A0"/><circle cx="60" cy="22" r="12" fill="#F5A3B7"/><circle cx="46" cy="34" r="12" fill="#F5A3B7"/><circle cx="74" cy="34" r="12" fill="#F5A3B7"/><circle cx="52" cy="48" r="12" fill="#F5A3B7"/><circle cx="68" cy="48" r="12" fill="#F5A3B7"/><circle cx="60" cy="36" r="9" fill="#F8D56B"/>')},
+    sommer:{gruss:'Genieß den Sommertag!',teil:'',deco:ln('<circle cx="60" cy="48" r="24" fill="#F8D56B"/><path d="M60 10v8M60 78v8M22 48h8M90 48h8M33 21l6 6M81 69l6 6M87 21l-6 6M39 69l-6 6" stroke="#E8791A" stroke-width="5"/><path d="M50 44h.5M70 44h.5M50 56q10 10 20 0"/>')},
+    herbst:{gruss:'Ein bunter Herbsttag!',teil:'blatt',deco:ln('<path d="M60 8l9 18 14-8-4 22 20-2-10 16 14 8-26 8 2 14-19-9-19 9 2-14-26-8 14-8-10-16 20 2-4-22 14 8z" fill="#F7934C"/><path d="M60 40v56"/>')},
+    schulstart:{gruss:'Willkommen im neuen Schuljahr!',teil:'konfetti',deco:ln('<path d="M38 34h44L62 98z" fill="#D43B55"/><path d="M38 34q6-22 22-18 18-6 22 18z" fill="#F8D56B"/><path d="M44 52h32M51 68h18" stroke="#fff" stroke-width="5"/>'+star(24,30,'#9CC8F2')+star(98,48,'#98D9BE'))},
+    halbjahr:{gruss:'Halbjahreszeugnisse: Du hast viel geschafft!',teil:'stern',deco:ln('<path d="M34 8h46l12 12v76H34z" fill="#fff"/><path d="M80 8v12h12M44 34h36M44 46h36M44 58h24"/>'+star(66,78,'#F8D56B'))},
+    ferien:{gruss:'Zeugnisse – und dann Sommerferien!',teil:'konfetti',deco:ln('<path d="M58 40L50 94" stroke-width="5"/><path d="M18 44q10-34 46-32 34 4 40 38-14-10-28-2-12-12-28-4-14-10-30 0z" fill="#F5A3B7"/><path d="M12 96q48-14 96 0z" fill="#F8D56B"/><circle cx="92" cy="76" r="11" fill="#9CC8F2"/>')}
+  };
+  var TEIL={
+    schnee:['<circle cx="10" cy="10" r="7" fill="white"/>'],
+    stern:['<path d="M10 1l2.6 6 6.4.6-4.8 4.3 1.4 6.4-5.6-3.4-5.6 3.4 1.4-6.4L1 7.6 7.4 7z" fill="#FFD35C"/>'],
+    bluete:['<g fill="#F5A3B7"><circle cx="10" cy="5" r="4.5"/><circle cx="15" cy="11" r="4.5"/><circle cx="10" cy="15" r="4.5"/><circle cx="5" cy="11" r="4.5"/></g><circle cx="10" cy="10" r="2.5" fill="#F8D56B"/>'],
+    blatt:['<path d="M2 18C2 6 10 1 19 2c0 11-6 17-17 16z" fill="#E8791A"/>','<path d="M2 18C2 6 10 1 19 2c0 11-6 17-17 16z" fill="#C8472D"/>','<path d="M2 18C2 6 10 1 19 2c0 11-6 17-17 16z" fill="#E3A81F"/>'],
+    konfetti:['<rect x="6" y="3" width="8" height="14" fill="#D43B55"/>','<rect x="6" y="3" width="8" height="14" fill="#1F9E6B"/>','<rect x="6" y="3" width="8" height="14" fill="#2D6FD1"/>','<rect x="6" y="3" width="8" height="14" fill="#F2B600"/>']
+  };
+  function ersterAdvent(y){var d=new Date(y,11,24);d.setDate(24-d.getDay()-21);return d;}
+  function inTermin(name,iso){return (TERMINE[name]||[]).some(function(r){return iso>=r[0]&&iso<=r[1];});}
+  function saisonFuer(now){
+    var h=location.hash.slice(1);
+    if(SAISON[h])return h;
+    var iso=isoOf(now),m=now.getMonth();
+    if(inTermin('ferien',iso))return 'ferien';
+    if(inTermin('schulstart',iso))return 'schulstart';
+    if(inTermin('halbjahr',iso))return 'halbjahr';
+    if(iso>=isoOf(ersterAdvent(now.getFullYear()))&&iso<=now.getFullYear()+'-12-26')return 'advent';
+    if(m>=2&&m<=4)return 'fruehling';
+    if(m>=5&&m<=7)return 'sommer';
+    if(m>=8&&m<=10)return 'herbst';
+    return 'winter';
+  }
+  var saisonGezeigt='';
+  function renderSaison(now){
+    var name=saisonFuer(now),s=SAISON[name],lit=0;
+    if(name==='advent'){
+      var heute=new Date(now.getFullYear(),now.getMonth(),now.getDate()),a=ersterAdvent(now.getFullYear());
+      lit=Math.max(1,Math.min(4,Math.floor(Math.round((heute-a)/86400000)/7)+1));
+    }
+    var key=name+lit;
+    if(key===saisonGezeigt)return;
+    saisonGezeigt=key;
+    $('stage').setAttribute('data-season',name);
+    document.querySelector('.greet-text .sub').textContent=s.gruss;
+    $('deco').innerHTML=name==='advent'?kranz(lit):s.deco;
+    var html='',formen=TEIL[s.teil],i;
+    if(formen){
+      for(i=0;i<26;i++){
+        var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'+formen[i%formen.length]+'</svg>';
+        html+='<i style="left:'+((i*37)%100)+'%;--s:'+(0.9+(i%4)*0.35)+'cqw;--d:'+(11+(i*7)%11)+'s;--w:-'+((i*13)%20)+'s;--x:'+(((i%5)-2)*2.4)+'cqw;--r:'+((i%2?1:-1)*(120+i*9))+'deg;--img:url(data:image/svg+xml,'+encodeURIComponent(svg).replace(/\(/g,'%28').replace(/\)/g,'%29')+')"></i>';
+      }
+    }
+    $('fall').innerHTML=html;
+  }
+  window.addEventListener('hashchange',function(){renderSaison(new Date());});
+
   function loop(){
     var n=new Date();
+    renderSaison(n);
     renderHead(n);render(n);
     if(hwPurge(n)&&!modal.hidden)hwAdminRender();
     hwRender(n);
